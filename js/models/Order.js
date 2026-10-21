@@ -118,10 +118,11 @@ export class Order {
 
     /**
      * Registra devolución/sobrante de producto no entregado por el repartidor
-     * y recalcula el total y saldo al instante.
+     * (y opcionalmente ajustes de precio unitario en ruta) recalculando el total y saldo al instante.
      * @param {Object<string, number>} devolucionesMap - Mapa { productId: nuevaCantidadDevuelta }
+     * @param {Object<string, number>} [preciosMap={}] - Mapa opcional { productId: nuevoPrecioUnitario }
      */
-    aplicarDevoluciones(devolucionesMap) {
+    aplicarDevoluciones(devolucionesMap, preciosMap = {}) {
         this.items.forEach(item => {
             if (Object.prototype.hasOwnProperty.call(devolucionesMap, item.productId)) {
                 const dev = Number(devolucionesMap[item.productId]);
@@ -132,6 +133,14 @@ export class Order {
                     throw new Error(`La devolución de ${item.nombre} (${dev}) no puede superar la salida (${item.cantidadSalida}).`);
                 }
                 item.cantidadDevuelta = dev;
+            }
+
+            if (Object.prototype.hasOwnProperty.call(preciosMap, item.productId)) {
+                const nuevoPrecio = Number(preciosMap[item.productId]);
+                if (isNaN(nuevoPrecio) || nuevoPrecio <= 0) {
+                    throw new Error(`El precio unitario de ${item.nombre} debe ser mayor a $0.00`);
+                }
+                item.precio = Math.round(nuevoPrecio * 100) / 100;
             }
         });
 

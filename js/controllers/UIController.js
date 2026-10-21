@@ -279,6 +279,7 @@ export class UIController {
                         <td class="thermal-col-qty">${neta}</td>
                         <td class="thermal-col-desc">
                             <div>${item.nombre}</div>
+                            <div class="thermal-subtext">@ ${this.formatCurrency(item.precio)} c/u</div>
                             ${leyendaDev}
                         </td>
                         <td class="thermal-col-price">${this.formatCurrency(subtotal)}</td>

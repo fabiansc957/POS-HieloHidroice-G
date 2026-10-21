@@ -175,6 +175,7 @@ export class POSController {
 
     /**
      * Agrega o incrementa un producto en el Ticket Rápido
+     * Conserva el precio unitario personalizado si ya estaba en el carrito.
      * @param {string} productId
      * @param {number} delta
      */
@@ -184,11 +185,16 @@ export class POSController {
 
         const existing = this.cart.get(productId);
         const nuevaCantidad = (existing ? existing.cantidad : 0) + delta;
+        const precioUnitario = existing ? existing.precioUnitario : product.precio;
 
         if (nuevaCantidad <= 0) {
             this.cart.delete(productId);
         } else {
-            this.cart.set(productId, { product, cantidad: nuevaCantidad });
+            this.cart.set(productId, {
+                product,
+                cantidad: nuevaCantidad,
+                precioUnitario
+            });
         }
 
         this.renderCart();
@@ -213,7 +219,53 @@ export class POSController {
     }
 
     /**
-     * Renderiza las líneas del Ticket Rápido (Derecha) y calcula su total
+     * Actualiza el precio unitario de un producto directamente desde el Ticket Rápido.
+     * Permite recalcular en tiempo real sin perder el foco del input mientras se escribe.
+     * @param {string} productId
+     * @param {number|string} rawPrice
+     * @param {boolean} [fullRender=false]
+     */
+    setCartUnitPrice(productId, rawPrice, fullRender = false) {
+        const entry = this.cart.get(productId);
+        if (!entry) return;
+
+        const parsed = parseFloat(rawPrice);
+        const validPrice = !isNaN(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : 0;
+        entry.precioUnitario = validPrice;
+
+        if (fullRender) {
+            // Si el usuario dejó el campo en 0 o vacío al salir del input, restaurar precio base
+            if (entry.precioUnitario <= 0) {
+                entry.precioUnitario = entry.product.precio;
+                this.uiController.showToast(
+                    `El precio debe ser mayor a $0.00. Se restauró el precio base (${entry.product.getPrecioFormateado()}).`,
+                    'warning'
+                );
+            }
+            this.renderCart();
+            return;
+        }
+
+        // Actualización ligera del DOM en vivo (sin perder foco del cursor)
+        const lineSubtotal = entry.precioUnitario * entry.cantidad;
+        const lineSubtotalEl = this.cartItemsContainer?.querySelector(
+            `[data-cart-line-subtotal="${productId}"]`
+        );
+        if (lineSubtotalEl) {
+            lineSubtotalEl.textContent = this.uiController.formatCurrency(lineSubtotal);
+        }
+
+        let totalImporte = 0;
+        this.cart.forEach(item => {
+            totalImporte += item.precioUnitario * item.cantidad;
+        });
+        if (this.cartTotalEl) {
+            this.cartTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
+        }
+    }
+
+    /**
+     * Renderiza las líneas del Ticket Rápido (Derecha) con edición de Precio Unitario y Cantidad
      */
     renderCart() {
         if (!this.cartItemsContainer) return;
@@ -234,29 +286,65 @@ export class POSController {
         let totalUnidades = 0;
         const rowsHtml = [];
 
-        this.cart.forEach(({ product, cantidad }) => {
-            const subtotal = product.precio * cantidad;
+        this.cart.forEach(({ product, cantidad, precioUnitario }) => {
+            const precioActual = Number(precioUnitario ?? product.precio);
+            const subtotal = precioActual * cantidad;
+            const esPrecioEspecial = Math.abs(precioActual - product.precio) >= 0.01;
+
             totalImporte += subtotal;
             totalUnidades += cantidad;
 
             rowsHtml.push(`
-                <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                    <div class="min-w-0 flex-1">
-                        <p class="font-bold text-slate-800 text-sm truncate">${product.nombre}</p>
-                        <p class="text-xs text-slate-500">${product.getPrecioFormateado()} c/u</p>
+                <div class="p-2.5 rounded-xl bg-slate-50 border ${esPrecioEspecial ? 'border-amber-300 bg-amber-50/30' : 'border-slate-200/80'} space-y-2 transition-colors">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-bold text-slate-800 text-sm truncate">${product.nombre}</p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-[11px] text-slate-400">Base tarjeta: ${product.getPrecioFormateado()}</span>
+                                ${esPrecioEspecial ? `
+                                    <span class="badge badge-warning badge-xs font-bold text-amber-950">Precio ajustado</span>
+                                    <button type="button" data-cart-reset-price="${product.id}"
+                                        title="Restaurar precio de tarjeta (${product.getPrecioFormateado()})"
+                                        class="text-[11px] text-cyan-700 hover:underline font-semibold">
+                                        Restaurar
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            <p class="font-extrabold text-cyan-800 text-sm" data-cart-line-subtotal="${product.id}">
+                                ${this.uiController.formatCurrency(subtotal)}
+                            </p>
+                            <span class="text-[10px] text-slate-400 block">Subtotal</span>
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-1">
-                        <button type="button" data-cart-dec="${product.id}"
-                            class="btn btn-xs btn-square btn-outline border-slate-300 text-slate-700 hover:bg-slate-200">-</button>
-                        <input type="number" min="1" value="${cantidad}" data-cart-input="${product.id}"
-                            class="input input-xs input-bordered w-14 text-center font-bold text-slate-800 px-1" />
-                        <button type="button" data-cart-inc="${product.id}"
-                            class="btn btn-xs btn-square bg-cyan-600 hover:bg-cyan-500 text-white border-none">+</button>
-                    </div>
+                    <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-200/60">
+                        <!-- Editor de Precio Unitario en el Ticket -->
+                        <label class="flex items-center gap-1.5" title="Editar precio unitario para este ticket">
+                            <span class="text-[11px] font-bold text-slate-600">Precio c/u:</span>
+                            <div class="relative flex items-center">
+                                <span class="absolute left-2 text-xs font-bold text-cyan-700 pointer-events-none">$</span>
+                                <input
+                                    type="number"
+                                    step="0.50"
+                                    min="0.50"
+                                    value="${precioActual}"
+                                    data-cart-price="${product.id}"
+                                    class="input input-xs input-bordered w-20 pl-5 pr-1 text-right font-extrabold text-cyan-900 bg-white border-cyan-300 focus:border-cyan-600" />
+                            </div>
+                        </label>
 
-                    <div class="text-right min-w-[72px]">
-                        <p class="font-extrabold text-cyan-800 text-sm">${this.uiController.formatCurrency(subtotal)}</p>
+                        <!-- Controles de Cantidad -->
+                        <div class="flex items-center gap-1">
+                            <button type="button" data-cart-dec="${product.id}"
+                                class="btn btn-xs btn-square btn-outline border-slate-300 text-slate-700 hover:bg-slate-200">-</button>
+                            <input type="number" min="1" value="${cantidad}" data-cart-input="${product.id}"
+                                class="input input-xs input-bordered w-12 text-center font-bold text-slate-800 px-1 bg-white" />
+                            <button type="button" data-cart-inc="${product.id}"
+                                class="btn btn-xs btn-square bg-cyan-600 hover:bg-cyan-500 text-white border-none">+</button>
+                        </div>
                     </div>
                 </div>
             `);
@@ -266,7 +354,7 @@ export class POSController {
         if (this.cartTotalEl) this.cartTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
         if (this.cartUnitsEl) this.cartUnitsEl.textContent = `${totalUnidades} pzas`;
 
-        // Eventos de botones +/- e input directo
+        // Eventos de botones +/- e input directo de cantidad
         this.cartItemsContainer.querySelectorAll('[data-cart-dec]').forEach(btn => {
             btn.addEventListener('click', () => this.addToCart(btn.getAttribute('data-cart-dec'), -1));
         });
@@ -278,10 +366,33 @@ export class POSController {
                 this.setCartQuantity(input.getAttribute('data-cart-input'), e.target.value);
             });
         });
+
+        // Eventos de edición de Precio Unitario en vivo dentro del Ticket Rápido
+        this.cartItemsContainer.querySelectorAll('[data-cart-price]').forEach(input => {
+            const productId = input.getAttribute('data-cart-price');
+            input.addEventListener('input', e => {
+                this.setCartUnitPrice(productId, e.target.value, false);
+            });
+            input.addEventListener('change', e => {
+                this.setCartUnitPrice(productId, e.target.value, true);
+            });
+        });
+
+        // Botón para restaurar precio base de tarjeta
+        this.cartItemsContainer.querySelectorAll('[data-cart-reset-price]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const productId = btn.getAttribute('data-cart-reset-price');
+                const entry = this.cart.get(productId);
+                if (entry) {
+                    this.setCartUnitPrice(productId, entry.product.precio, true);
+                }
+            });
+        });
     }
 
     /**
      * Procesa el formulario de Ticket Rápido para crear una nueva orden de venta
+     * respetando los precios unitarios personalizados en el ticket.
      * @private
      */
     _handleCreateOrder() {
@@ -296,15 +407,20 @@ export class POSController {
         const estatus = this.statusSelect?.value || 'Pagado';
 
         const items = [];
-        this.cart.forEach(({ product, cantidad }) => {
+        for (const { product, cantidad, precioUnitario } of this.cart.values()) {
+            const precioAplicado = Number(precioUnitario ?? product.precio);
+            if (isNaN(precioAplicado) || precioAplicado <= 0) {
+                this.uiController.showToast(`Verifica el precio unitario de ${product.nombre}.`, 'error');
+                return;
+            }
             items.push({
                 productId: product.id,
                 nombre: product.nombre,
-                precio: product.precio,
+                precio: precioAplicado,
                 cantidadSalida: cantidad,
                 cantidadDevuelta: 0
             });
-        });
+        }
 
         const newOrder = this.storeService.createOrder({
             clienteNombre,
@@ -373,7 +489,7 @@ export class POSController {
                             ? `<span class="text-amber-600 font-semibold">(-${i.cantidadDevuelta} dev)</span>`
                             : '';
                         return `<span class="inline-block mr-2 text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md mb-1">
-                            <strong>${neta}x</strong> ${i.nombre} ${devBadge}
+                            <strong>${neta}x</strong> ${i.nombre} <span class="text-cyan-700 font-semibold">(${this.uiController.formatCurrency(i.precio)})</span> ${devBadge}
                         </span>`;
                     })
                     .join('');
@@ -517,12 +633,21 @@ export class POSController {
                         <div>
                             <p class="font-bold text-slate-800">${item.nombre}</p>
                             <p class="text-xs text-slate-500">
-                                Precio: ${this.uiController.formatCurrency(item.precio)} |
                                 <strong>Salida de planta: ${item.cantidadSalida} pzas</strong>
                             </p>
                         </div>
 
-                        <div class="flex items-center gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <label class="form-control">
+                                <span class="label-text text-xs font-semibold text-cyan-800 mb-1">Precio Unit. ($)</span>
+                                <input type="number"
+                                    step="0.50"
+                                    min="0.50"
+                                    value="${item.precio}"
+                                    data-return-price="${item.productId}"
+                                    class="input input-sm input-bordered w-24 text-center font-bold text-cyan-900 border-cyan-300 focus:border-cyan-600" />
+                            </label>
+
                             <label class="form-control">
                                 <span class="label-text text-xs font-semibold text-amber-800 mb-1">Devuelto / Sobrante</span>
                                 <input type="number"
@@ -531,7 +656,6 @@ export class POSController {
                                     value="${item.cantidadDevuelta}"
                                     data-return-product="${item.productId}"
                                     data-salida="${item.cantidadSalida}"
-                                    data-precio="${item.precio}"
                                     class="input input-sm input-bordered w-24 text-center font-bold text-amber-900 border-amber-300 focus:border-amber-500" />
                             </label>
 
@@ -550,8 +674,8 @@ export class POSController {
 
         this._updateReturnLivePreview();
 
-        // Actualizar previsualización en vivo al cambiar las cantidades devueltas
-        this.returnItemsContainer.querySelectorAll('[data-return-product]').forEach(input => {
+        // Actualizar previsualización en vivo al cambiar las cantidades devueltas o el precio unitario
+        this.returnItemsContainer.querySelectorAll('[data-return-product], [data-return-price]').forEach(input => {
             input.addEventListener('input', () => this._updateReturnLivePreview());
         });
 
@@ -569,7 +693,8 @@ export class POSController {
         this.returnItemsContainer.querySelectorAll('[data-return-product]').forEach(input => {
             const productId = input.getAttribute('data-return-product');
             const salida = Number(input.getAttribute('data-salida'));
-            const precio = Number(input.getAttribute('data-precio'));
+            const priceInput = this.returnItemsContainer.querySelector(`[data-return-price="${productId}"]`);
+            const precio = Math.max(0, Number(priceInput?.value) || 0);
             const devuelta = Math.min(salida, Math.max(0, Number(input.value) || 0));
 
             const neta = Math.max(0, salida - devuelta);
@@ -589,7 +714,7 @@ export class POSController {
     }
 
     /**
-     * Guarda la devolución/sobrante invocando los métodos de Order.js y persiste el recálculo
+     * Guarda la devolución/sobrante y ajustes de precio invocando los métodos de Order.js y persiste el recálculo
      * @private
      */
     _handleSaveReturn() {
@@ -598,12 +723,15 @@ export class POSController {
         if (!order) return;
 
         const devolucionesMap = {};
+        const preciosMap = {};
         const inputs = this.returnItemsContainer.querySelectorAll('[data-return-product]');
 
         for (const input of inputs) {
             const productId = input.getAttribute('data-return-product');
             const salida = Number(input.getAttribute('data-salida'));
             const val = Number(input.value);
+            const priceInput = this.returnItemsContainer.querySelector(`[data-return-price="${productId}"]`);
+            const nuevoPrecio = Number(priceInput?.value);
 
             if (isNaN(val) || val < 0 || val > salida) {
                 this.uiController.showToast(
@@ -612,12 +740,20 @@ export class POSController {
                 );
                 return;
             }
+            if (isNaN(nuevoPrecio) || nuevoPrecio <= 0) {
+                this.uiController.showToast(
+                    'El precio unitario debe ser mayor a $0.00.',
+                    'error'
+                );
+                return;
+            }
             devolucionesMap[productId] = val;
+            preciosMap[productId] = nuevoPrecio;
         }
 
         try {
             // Invocar método de negocio puro en Order.js
-            order.aplicarDevoluciones(devolucionesMap);
+            order.aplicarDevoluciones(devolucionesMap, preciosMap);
             this.storeService.updateOrder(order);
 
             this.returnModal?.close();

@@ -1,0 +1,184 @@
+/* ==========================================================================
+   Hielo HidroIce POS - Estilos Institucionales e Impresión Térmica
+   Aguascalientes, México
+   ========================================================================== */
+
+:root {
+    --hidro-cyan: #0891b2;
+    --hidro-blue: #0f172a;
+}
+
+/* Scrollbar sutil para paneles operativos */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0891b2;
+}
+
+/* Backdrop del modal de Login ineludible */
+#modal-login::backdrop {
+    background: linear-gradient(135deg, rgba(8, 51, 68, 0.92), rgba(15, 23, 42, 0.96));
+    backdrop-filter: blur(8px);
+}
+
+/* El contenedor de impresión térmica permanece oculto en pantalla normal */
+#thermal-print-area {
+    display: none;
+}
+
+/* ==========================================================================
+   OPTIMIZACIÓN PARA IMPRESIÓN TÉRMICA (53mm / 58mm / 80mm)
+   ========================================================================== */
+@media print {
+    @page {
+        margin: 0;
+        size: 58mm auto;
+    }
+
+    html,
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 11px !important;
+        line-height: 1.25 !important;
+        width: 58mm !important;
+    }
+
+    /* Ocultar absolutamente toda la interfaz principal, modales y toasts */
+    #app-main-shell,
+    dialog,
+    #toast-container,
+    .no-print {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Mostrar únicamente el área del ticket térmico */
+    #thermal-print-area {
+        display: block !important;
+        visibility: visible !important;
+        width: 56mm !important;
+        margin: 0 auto !important;
+        padding: 2mm 1mm !important;
+    }
+
+    .thermal-ticket {
+        width: 100%;
+        color: #000000;
+    }
+
+    .thermal-header {
+        text-align: center;
+        margin-bottom: 4px;
+    }
+
+    .thermal-logo-box {
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+        border: 1.5px solid #000;
+        padding: 2px 4px;
+        display: inline-block;
+        margin-bottom: 2px;
+    }
+
+    .thermal-subtitle {
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    .thermal-address {
+        font-size: 9px;
+    }
+
+    .thermal-divider {
+        border-top: 1px dashed #000000;
+        margin: 5px 0;
+    }
+
+    .thermal-meta {
+        font-size: 10px;
+        line-height: 1.35;
+    }
+
+    .thermal-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+    }
+
+    .thermal-table th {
+        border-bottom: 1px solid #000;
+        text-align: left;
+        padding-bottom: 2px;
+        font-weight: bold;
+    }
+
+    .thermal-table td {
+        padding: 2px 0;
+        vertical-align: top;
+    }
+
+    .thermal-col-qty {
+        width: 16%;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .thermal-col-desc {
+        width: 54%;
+        padding-right: 2px;
+    }
+
+    .thermal-col-price {
+        width: 30%;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .thermal-subtext {
+        font-size: 8.5px;
+        font-style: italic;
+    }
+
+    .thermal-totals {
+        font-size: 10px;
+        margin-top: 3px;
+    }
+
+    .thermal-total-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 1.5px 0;
+    }
+
+    .thermal-grand-total {
+        font-size: 12px;
+        font-weight: 900;
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+        padding: 2px 0;
+        margin: 3px 0;
+    }
+
+    .thermal-footer {
+        text-align: center;
+        font-size: 9px;
+        margin-top: 6px;
+    }
+}

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hielo HidroIce | POS & Logística de Distribución — Aguascalientes</title>
+
+    <!-- Tailwind CSS & daisyUI vía CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Estilos personalizados e Impresión Térmica (@media print) -->
+    <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800 antialiased">
+
+    <!-- =====================================================================
+         CONTENEDOR DE NOTIFICACIONES TOAST (daisyUI - Cero alert() nativos)
+         ===================================================================== -->
+    <div id="toast-container" class="toast toast-top toast-end z-[100] no-print"></div>
+
+    <!-- =====================================================================
+         SHELL PRINCIPAL DE LA APLICACIÓN
+         ===================================================================== -->
+    <div id="app-main-shell" class="min-h-screen flex flex-col transition-all duration-300 blur-sm pointer-events-none select-none">
+
+        <!-- BARRA SUPERIOR INSTITUCIONAL (Tonos Cian y Azul Institucional) -->
+        <header class="bg-gradient-to-r from-slate-900 via-cyan-950 to-sky-900 text-white shadow-lg border-b border-cyan-800/60 sticky top-0 z-30">
+            <div class="max-w-[1440px] mx-auto px-4 lg:px-6 h-16 flex items-center justify-between gap-4">
+
+                <!-- Identidad Hielo HidroIce -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-2xl shadow-inner">
+                        ❄️
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="font-black tracking-tight text-lg sm:text-xl text-white">
+                                HIELO <span class="text-cyan-400">HIDROICE</span>
+                            </h1>
+                            <span class="hidden md:inline-block badge badge-xs bg-cyan-500/20 text-cyan-200 border-cyan-400/30 font-semibold py-2 px-2">
+                                Aguascalientes, Ags.
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-cyan-200/80 hidden sm:block">
+                            Punto de Venta, Rutas de Reparto y Control de Hielo Cilíndrico
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Acciones derechas: Slot Admin (Corte de Caja), Reloj y Sesión -->
+                <div class="flex items-center gap-3">
+                    <span id="nav-live-clock" class="hidden xl:inline-block text-xs font-mono text-cyan-200/90 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-cyan-800/50"></span>
+
+                    <!-- Slot dinámico RBAC para botón "Corte de Caja Diario" (Destruido del DOM si es Cajero) -->
+                    <div id="admin-navbar-slot"></div>
+
+                    <div class="h-6 w-px bg-cyan-800 hidden sm:block"></div>
+
+                    <div class="flex items-center gap-2 bg-slate-900/60 border border-cyan-800/60 rounded-xl px-3 py-1.5">
+                        <div class="text-right">
+                            <p id="nav-user-name" class="text-xs font-bold text-white leading-none">Sin sesión</p>
+                            <span id="nav-user-badge" class="badge badge-ghost badge-xs mt-1">BLOQUEADO</span>
+                        </div>
+                        <button id="btn-logout" type="button" title="Cerrar Sesión / Cambiar Usuario"
+                            class="btn btn-xs btn-ghost text-cyan-200 hover:text-white hover:bg-red-500/20 ml-1">
+                            Salir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- BARRA DE PESTAÑAS DE NAVEGACIÓN (RBAC) -->
+        <nav class="bg-white border-b border-slate-200 shadow-xs">
+            <div class="max-w-[1440px] mx-auto px-4 lg:px-6 py-2 flex items-center justify-between flex-wrap gap-2">
+                <div role="tablist" class="tabs tabs-boxed bg-slate-100 p-1 gap-1">
+                    <button id="tab-btn-pos" type="button" role="tab"
+                        class="tab tab-active bg-cyan-600 text-white gap-2 font-semibold transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span>Punto de Venta y Operación de Hoy</span>
+                    </button>
+
+                    <!-- Slot dinámico RBAC para pestaña "Cuentas por Cobrar" (Destruido del DOM si es Cajero) -->
+                    <div id="admin-tabs-slot" class="contents"></div>
+                </div>
+
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Especificación: <strong>Hielo Cilíndrico Purificado</strong> (Sin cubos)</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 lg:px-6 py-6">
+
+            <!-- =================================================================
+                 VISTA 1: POS / OPERACIÓN DE HOY
+                 ================================================================= -->
+            <section id="view-pos" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                <!-- COLUMNA IZQUIERDA (8 cols): Catálogo + Tabla Pedidos de Hoy -->
+                <div class="lg:col-span-8 space-y-6">
+
+                    <!-- Catálogo de Productos -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                                    <span class="text-cyan-600">🧊</span> Catálogo Oficial Hielo HidroIce
+                                </h2>
+                                <p class="text-xs text-slate-500">
+                                    Selecciona los productos para cargarlos al Ticket Rápido de salida o mostrador
+                                </p>
+                            </div>
+                            <span class="badge bg-cyan-50 text-cyan-800 border-cyan-200 font-semibold text-xs">
+                                Precios Planta Ags
+                            </span>
+                        </div>
+
+                        <div id="pos-catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                            <!-- Tarjetas inyectadas por POSController.js -->
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Pedidos / Operaciones de Hoy -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                                    <span class="text-cyan-600">🚚</span> Pedidos y Salidas de Ruta de Hoy
+                                </h2>
+                                <p class="text-xs text-slate-500">
+                                    Usa <strong>Devolución/Sobrante</strong> cuando el repartidor regrese con hielo no entregado para recalcular al instante.
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <span id="pos-today-count" class="badge badge-ghost font-semibold">0 operaciones</span>
+                                <span id="pos-today-total" class="badge bg-cyan-700 text-white border-none font-bold py-3 px-3">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="table table-sm w-full">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-600 text-xs uppercase">
+                                        <th>Folio / Hora</th>
+                                        <th>Cliente / Ruta</th>
+                                        <th>Desglose Neto (Salida - Dev)</th>
+                                        <th class="text-right">Total Neto</th>
+                                        <th class="text-right">Saldo</th>
+                                        <th class="text-center">Estatus</th>
+                                        <th class="text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pos-today-orders-tbody">
+                                    <!-- Filas inyectadas por POSController.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA (4 cols): Ticket Rápido -->
+                <aside class="lg:col-span-4 bg-white rounded-2xl shadow-md border border-cyan-200/80 p-5 sticky top-20">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div>
+                            <h2 class="text-lg font-extrabold text-slate-800">🧾 Ticket Rápido</h2>
+                            <p class="text-xs text-slate-500">Registro de venta en mostrador o salida de ruta</p>
+                        </div>
+                        <button id="btn-clear-cart" type="button"
+                            class="btn btn-xs btn-ghost text-slate-500 hover:text-red-600">
+                            Vaciar
+                        </button>
+                    </div>
+
+                    <form id="pos-ticket-form" class="mt-4 space-y-3.5">
+                        <!-- Selector de Cliente con <datalist> de Abarrotes Locales -->
+                        <div class="form-control">
+                            <label class="label py-1" for="pos-client-input">
+                                <span class="label-text text-xs font-bold text-slate-700">Cliente / Abarrotes</span>
+                                <span class="label-text-alt text-[11px] text-cyan-700">Catálogo o nuevo</span>
+                            </label>
+                            <input
+                                id="pos-client-input"
+                                type="text"
+                                list="pos-clients-datalist"
+                                placeholder="Ej. Abarrotes La Aguascalentense..."
+                                required
+                                class="input input-sm input-bordered w-full focus:border-cyan-600 font-medium" />
+                            <datalist id="pos-clients-datalist"></datalist>
+                        </div>
+
+                        <!-- Repartidor y Método de Pago -->
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <div class="form-control">
+                                <label class="label py-1" for="pos-driver-select">
+                                    <span class="label-text text-xs font-bold text-slate-700">Repartidor / Ruta</span>
+                                </label>
+                                <select id="pos-driver-select" class="select select-sm select-bordered w-full font-medium">
+                                    <option value="Mostrador">Mostrador Planta</option>
+                                    <option value="Juan Pérez">Juan Pérez</option>
+                                    <option value="Ruta Norte">Ruta Norte</option>
+                                    <option value="Ruta Sur">Ruta Sur (Feria)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-1" for="pos-payment-select">
+                                    <span class="label-text text-xs font-bold text-slate-700">Método de Pago</span>
+                                </label>
+                                <select id="pos-payment-select" class="select select-sm select-bordered w-full font-medium">
+                                    <option value="Efectivo">💵 Efectivo</option>
+                                    <option value="Transferencia">📱 Transferencia</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Estatus Inicial de la Nota -->
+                        <div class="form-control">
+                            <label class="label py-1" for="pos-status-select">
+                                <span class="label-text text-xs font-bold text-slate-700">Estatus de Operación</span>
+                            </label>
+                            <select id="pos-status-select" class="select select-sm select-bordered w-full font-bold">
+                                <option value="Pagado">✅ Pagado (Liquidado — Saldo $0.00)</option>
+                                <option value="Pendiente">⏳ Pendiente (Crédito Ruta / CxC)</option>
+                            </select>
+                        </div>
+
+                        <!-- Líneas del Carrito -->
+                        <div class="pt-2">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Productos en Nota</span>
+                                <span id="pos-cart-units" class="badge badge-xs badge-info font-bold text-cyan-950">0 pzas</span>
+                            </div>
+                            <div id="pos-cart-items" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                <!-- Líneas inyectadas por POSController.js -->
+                            </div>
+                        </div>
+
+                        <!-- Resumen Total y Botón de Registro -->
+                        <div class="pt-3 border-t border-slate-200 space-y-3">
+                            <div class="flex items-center justify-between bg-cyan-950 text-white p-3.5 rounded-xl">
+                                <div>
+                                    <span class="text-xs uppercase tracking-wider text-cyan-300 block font-semibold">Total de la Nota</span>
+                                    <span class="text-[11px] text-cyan-200/80">Precios netos en MXN</span>
+                                </div>
+                                <span id="pos-cart-total" class="text-2xl font-black text-cyan-300">$0.00</span>
+                            </div>
+
+                            <button type="submit"
+                                class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md">
+                                Registrar Salida / Emitir Ticket
+                            </button>
+                        </div>
+                    </form>
+                </aside>
+            </section>
+
+            <!-- =================================================================
+                 VISTA 2: CUENTAS POR COBRAR — MOTOR FIFO (SOLO ADMIN)
+                 ================================================================= -->
+            <section id="view-cxc" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                <!-- Panel Izquierdo (8 cols): Filtro por Cliente y Tabla Cronológica FIFO -->
+                <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                                <span class="text-cyan-600">📒</span> Cartera de Cuentas por Cobrar (Orden FIFO)
+                            </h2>
+                            <p class="text-xs text-slate-500">
+                                Las notas con estatus <strong>Pendiente</strong> se ordenan de la más antigua a la más reciente para prelación de cobro.
+                            </p>
+                        </div>
+
+                        <div class="text-right bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+                            <span id="cxc-total-notes" class="block text-[11px] font-bold text-amber-800 uppercase">0 notas pendientes</span>
+                            <span id="cxc-total-debt" class="text-xl font-black text-amber-700">$0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Filtro por Cliente -->
+                    <div class="form-control max-w-md">
+                        <label class="label py-1" for="cxc-client-filter">
+                            <span class="label-text text-xs font-bold text-slate-700">Filtrar notas pendientes por Cliente:</span>
+                        </label>
+                        <select id="cxc-client-filter" class="select select-sm select-bordered border-cyan-300 font-semibold text-slate-800">
+                            <!-- Opciones generadas por DebtController.js -->
+                        </select>
+                    </div>
+
+                    <!-- Tabla de Notas Pendientes -->
+                    <div class="overflow-x-auto">
+                        <table class="table table-sm w-full">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-xs uppercase">
+                                    <th>Folio / Prioridad</th>
+                                    <th>Fecha Emisión</th>
+                                    <th>Cliente / Ruta</th>
+                                    <th class="text-right">Total Nota</th>
+                                    <th class="text-right">Abonado</th>
+                                    <th class="text-right">Saldo Pendiente</th>
+                                    <th class="text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cxc-pending-tbody">
+                                <!-- Filas inyectadas por DebtController.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Panel Derecho (4 cols): Motor de Abono Global Inteligente (FIFO) -->
+                <aside class="lg:col-span-4 bg-white rounded-2xl shadow-md border border-cyan-200 p-5 sticky top-20">
+                    <div class="pb-3 border-b border-slate-100">
+                        <span class="badge badge-info badge-sm font-bold text-cyan-950 mb-1">Algoritmo Financiero FIFO</span>
+                        <h3 class="text-lg font-extrabold text-slate-800">⚡ Abono Global Inteligente</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Ingresa un monto global (ej. $500.00) y el sistema liquidará primero las notas más antiguas del cliente, abonando el remanente en la nota subsecuente.
+                        </p>
+                    </div>
+
+                    <form id="cxc-fifo-form" class="mt-4 space-y-4">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="text-[11px] uppercase font-bold text-slate-400 block">Cliente Objetivo</span>
+                            <p id="cxc-fifo-target-client" class="font-extrabold text-cyan-900 text-sm mt-0.5">
+                                Seleccione un cliente
+                            </p>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label py-1" for="cxc-fifo-amount">
+                                <span class="label-text text-xs font-bold text-slate-700">Monto del Abono Global ($ MXN)</span>
+                            </label>
+                            <input
+                                id="cxc-fifo-amount"
+                                type="number"
+                                step="0.01"
+                                min="1"
+                                placeholder="Ej. 500.00"
+                                required
+                                class="input input-bordered w-full font-extrabold text-lg text-cyan-900 focus:border-cyan-600" />
+
+                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                <button type="button" data-fifo-quick-amount="200" class="btn btn-xs btn-outline border-slate-300 text-slate-600">+$200</button>
+                                <button type="button" data-fifo-quick-amount="500" class="btn btn-xs btn-outline border-cyan-400 text-cyan-800 font-bold">+$500 (Demo FIFO)</button>
+                                <button type="button" data-fifo-quick-amount="1000" class="btn btn-xs btn-outline border-slate-300 text-slate-600">+$1,000</button>
+                                <button type="button" data-fifo-quick-amount="all" class="btn btn-xs bg-cyan-50 text-cyan-800 border border-cyan-200">Liquidar Total</button>
+                            </div>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label py-1" for="cxc-fifo-method">
+                                <span class="label-text text-xs font-bold text-slate-700">Método de Recepción del Abono</span>
+                            </label>
+                            <select id="cxc-fifo-method" class="select select-sm select-bordered w-full font-semibold">
+                                <option value="Efectivo">💵 Efectivo Físico (Entra a Arqueo de Caja)</option>
+                                <option value="Transferencia">📱 Transferencia Bancaria</option>
+                            </select>
+                        </div>
+
+                        <button id="cxc-fifo-submit-btn" type="submit"
+                            class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md">
+                            Aplicar Abono Global (FIFO)
+                        </button>
+                    </form>
+
+                    <!-- Bitácora del último abono FIFO procesado -->
+                    <div id="cxc-fifo-result-log"></div>
+                </aside>
+            </section>
+        </main>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 1: LOGIN INELUDIBLE (<dialog>) CON ACCESO RBAC
+         ===================================================================== -->
+    <dialog id="modal-login" class="modal">
+        <div class="modal-box max-w-md bg-white rounded-3xl shadow-2xl border border-cyan-200 p-0 overflow-hidden">
+            <div class="bg-gradient-to-br from-slate-900 via-cyan-950 to-sky-900 p-6 text-white text-center">
+                <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+                    ❄️
+                </div>
+                <h2 class="text-2xl font-black tracking-tight">HIELO <span class="text-cyan-400">HIDROICE</span></h2>
+                <p class="text-xs text-cyan-200 mt-1">Sistema POS y Logística de Distribución — Aguascalientes</p>
+            </div>
+
+            <form id="form-login" class="p-6 space-y-4">
+                <div id="login-error-msg" class="hidden alert alert-error text-white text-xs font-semibold py-2.5 px-3 rounded-xl"></div>
+
+                <div class="form-control">
+                    <label class="label py-1" for="login-username">
+                        <span class="label-text text-xs font-bold uppercase text-slate-600">Usuario</span>
+                    </label>
+                    <input id="login-username" type="text" placeholder="admin o cajero" required autocomplete="username"
+                        class="input input-bordered w-full font-semibold focus:border-cyan-600" />
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-1" for="login-password">
+                        <span class="label-text text-xs font-bold uppercase text-slate-600">Contraseña</span>
+                    </label>
+                    <input id="login-password" type="password" placeholder="••••••••" required autocomplete="current-password"
+                        class="input input-bordered w-full font-semibold focus:border-cyan-600" />
+                </div>
+
+                <button type="submit" class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md">
+                    Ingresar al Sistema
+                </button>
+
+                <!-- Botones de autocompletado rápido de credenciales para evaluar RBAC -->
+                <div class="pt-3 border-t border-slate-100">
+                    <p class="text-[11px] text-center text-slate-400 font-medium mb-2">
+                        Autocompletar credenciales de prueba (RBAC):
+                    </p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" data-quick-login="admin"
+                            class="btn btn-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 font-bold">
+                            🔑 Admin (admin/admin)
+                        </button>
+                        <button type="button" data-quick-login="cajero"
+                            class="btn btn-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold">
+                            🧑‍💼 Cajero (cajero/cajero)
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- =====================================================================
+         MODAL 2: DEVOLUCIÓN / SOBRANTE DE RUTA (<dialog>)
+         ===================================================================== -->
+    <dialog id="modal-return" class="modal">
+        <div class="modal-box max-w-xl bg-white rounded-2xl border border-slate-200 p-6">
+            <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <span class="badge badge-warning badge-sm font-bold text-amber-950 mb-1">Ajuste de Ruta en Tiempo Real</span>
+                    <h3 class="text-lg font-extrabold text-slate-800">
+                        🔄 Devolución / Sobrante de Producto — <span id="return-order-folio" class="text-cyan-700 font-mono"></span>
+                    </h3>
+                    <p id="return-order-client" class="text-xs text-slate-500 mt-0.5"></p>
+                </div>
+            </div>
+
+            <form id="form-return" class="mt-4 space-y-4">
+                <p class="text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    Ingresa la cantidad de bolsas, barras o garrafones que el repartidor <strong>no entregó</strong> y regresó a planta. El total de la orden y su saldo se recalcularán al instante.
+                </p>
+
+                <div id="return-items-container" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                    <!-- Controles inyectados por POSController.js -->
+                </div>
+
+                <div class="flex items-center justify-between bg-slate-900 text-white p-3.5 rounded-xl">
+                    <span class="text-xs uppercase font-bold text-cyan-300">Nuevo Total Neto Recalculado:</span>
+                    <span id="return-preview-total" class="text-xl font-black text-cyan-300">$0.00</span>
+                </div>
+
+                <div class="modal-action mt-4">
+                    <button id="btn-cancel-return" type="button" class="btn btn-sm btn-ghost">Cancelar</button>
+                    <button type="submit" class="btn btn-sm bg-cyan-600 hover:bg-cyan-500 text-white border-none font-bold">
+                        Guardar Devolución y Recalcular
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- =====================================================================
+         MODAL 3: CORTE DE CAJA DIARIO Y ARQUEO DE INVENTARIO (SOLO ADMIN)
+         ===================================================================== -->
+    <dialog id="modal-cash-cut" class="modal">
+        <div class="modal-box max-w-3xl bg-white rounded-2xl border border-cyan-200 p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                <div>
+                    <span class="badge badge-info badge-sm font-bold text-cyan-950">Exclusivo Administrador</span>
+                    <h3 class="text-xl font-black text-slate-800 mt-1">📊 Corte de Caja Diario y Arqueo de Inventario</h3>
+                    <p id="corte-fecha" class="text-xs text-slate-500 capitalize"></p>
+                </div>
+                <span id="corte-operaciones-resumen" class="badge badge-ghost font-semibold text-xs"></span>
+            </div>
+
+            <!-- 1. Arqueo Financiero (Separación estricta Efectivo vs Transferencias) -->
+            <div class="mt-5">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2.5">
+                    1. Arqueo Financiero (Ingresos Reales Recibidos Hoy)
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+                        <span class="text-xs font-bold text-emerald-800 block">💵 Efectivo Físico en Gaveta</span>
+                        <span id="corte-efectivo" class="text-2xl font-black text-emerald-700 mt-1 block">$0.00</span>
+                        <span class="text-[11px] text-emerald-600">Billetes y monedas por arquear</span>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-sky-50 border border-sky-200">
+                        <span class="text-xs font-bold text-sky-800 block">📱 Transferencias Bancarias</span>
+                        <span id="corte-transferencia" class="text-2xl font-black text-sky-700 mt-1 block">$0.00</span>
+                        <span class="text-[11px] text-sky-600">SPEI / Cuenta Empresarial</span>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-slate-900 text-white">
+                        <span class="text-xs font-bold text-cyan-300 block">💰 Total Ingresado Hoy</span>
+                        <span id="corte-total-caja" class="text-2xl font-black text-white mt-1 block">$0.00</span>
+                        <span class="text-[11px] text-cyan-200/80">
+                            Crédito hoy por cobrar: <strong id="corte-credito-hoy">$0.00</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Corte de Inventario Neto (Unidades Vendidas - Devoluciones) -->
+            <div class="mt-6">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2.5">
+                    2. Corte de Inventario Neto (Salidas de Planta menos Devoluciones de Ruta)
+                </h4>
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="table table-sm w-full">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-xs">
+                                <th>Producto Oficial</th>
+                                <th class="text-right">Precio Unit.</th>
+                                <th class="text-center">Unidades Salida</th>
+                                <th class="text-center">Devoluciones</th>
+                                <th class="text-center">Venta Neta</th>
+                                <th class="text-right">Importe Neto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corte-inventario-tbody"></tbody>
+                        <tfoot>
+                            <tr class="bg-cyan-50/70 font-extrabold text-slate-800 text-xs">
+                                <td colspan="2">TOTALES DEL DÍA</td>
+                                <td id="corte-inv-total-salida" class="text-center">0</td>
+                                <td id="corte-inv-total-dev" class="text-center text-amber-700">0</td>
+                                <td id="corte-inv-total-neto" class="text-center text-cyan-800">0</td>
+                                <td id="corte-inv-importe-total" class="text-right text-cyan-900">$0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-action mt-6">
+                <button id="btn-print-cash-cut" type="button"
+                    class="btn btn-sm bg-slate-800 hover:bg-slate-700 text-white border-none gap-2">
+                    🖨️ Imprimir Corte Térmico
+                </button>
+                <button id="btn-close-cash-cut" type="button"
+                    class="btn btn-sm bg-cyan-600 hover:bg-cyan-500 text-white border-none">
+                    Cerrar Corte
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- =====================================================================
+         ÁREA EXCLUSIVA PARA IMPRESIÓN TÉRMICA (@media print)
+         ===================================================================== -->
+    <section id="thermal-print-area" aria-hidden="true"></section>
+
+    <!-- Punto de Entrada ES6 Module -->
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>

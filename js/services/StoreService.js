@@ -8,7 +8,7 @@ import { Client } from '../models/Client.js';
  */
 export class StoreService {
     static KEYS = {
-        PRODUCTS: 'hidroice_products_v1',
+        PRODUCTS: 'hidroice_products_v2',
         ORDERS: 'hidroice_orders_v1',
         CLIENTS: 'hidroice_clients_v1',
         FOLIO_SEQ: 'hidroice_folio_seq_v1'
@@ -23,17 +23,15 @@ export class StoreService {
      * @private
      */
     _initializeDefaultData() {
-        // 1. Catálogo oficial de productos (Hielo Cilíndrico, Barra y Agua)
-        if (!localStorage.getItem(StoreService.KEYS.PRODUCTS)) {
-            const initialProducts = [
-                new Product('HI-CIL-05', 'Bolsa 5 Kgs Cilíndrico', 25.00, 'hielo_cilindrico', 'Bolsa 5kg'),
-                new Product('HI-CIL-15', 'Bolsa 15 Kgs Cilíndrico', 60.00, 'hielo_cilindrico', 'Bolsa 15kg'),
-                new Product('HI-CIL-03', 'Bolsa 3 Kgs Cilíndrico', 18.00, 'hielo_cilindrico', 'Bolsa 3kg'),
-                new Product('HI-BAR-25', '1/4 de Barra', 45.00, 'barra', 'Pieza 1/4'),
-                new Product('HI-GAR-20', 'Garrafón 20L', 20.00, 'agua', 'Garrafón 20L')
-            ];
-            localStorage.setItem(StoreService.KEYS.PRODUCTS, JSON.stringify(initialProducts));
-        }
+        // 1. Catálogo oficial de productos con precios default actualizados (Hielo Cilíndrico, Barra y Agua)
+        const officialProducts = [
+            new Product('HI-CIL-05', 'Bolsa 5 Kgs Cilíndrico', 20.00, 'hielo_cilindrico', 'Bolsa 5kg'),
+            new Product('HI-CIL-15', 'Bolsa 15 Kgs Cilíndrico', 50.00, 'hielo_cilindrico', 'Bolsa 15kg'),
+            new Product('HI-CIL-03', 'Bolsa 3 Kgs Cilíndrico', 15.00, 'hielo_cilindrico', 'Bolsa 3kg'),
+            new Product('HI-BAR-25', '1/4 de Barra', 45.00, 'barra', 'Pieza 1/4'),
+            new Product('HI-GAR-20', 'Garrafón 20L', 20.00, 'agua', 'Garrafón 20L')
+        ];
+        localStorage.setItem(StoreService.KEYS.PRODUCTS, JSON.stringify(officialProducts));
 
         // 2. Cartera inicial de clientes locales en Aguascalientes
         if (!localStorage.getItem(StoreService.KEYS.CLIENTS)) {
@@ -64,8 +62,8 @@ export class StoreService {
                     metodoPago: 'Efectivo',
                     estatus: 'Pendiente',
                     items: [
-                        { productId: 'HI-CIL-05', nombre: 'Bolsa 5 Kgs Cilíndrico', precio: 25.00, cantidadSalida: 12, cantidadDevuelta: 2 },
-                        { productId: 'HI-CIL-15', nombre: 'Bolsa 15 Kgs Cilíndrico', precio: 60.00, cantidadSalida: 3, cantidadDevuelta: 0 }
+                        { productId: 'HI-CIL-05', nombre: 'Bolsa 5 Kgs Cilíndrico', precio: 20.00, cantidadSalida: 12, cantidadDevuelta: 2 },
+                        { productId: 'HI-CIL-15', nombre: 'Bolsa 15 Kgs Cilíndrico', precio: 50.00, cantidadSalida: 3, cantidadDevuelta: 0 }
                     ]
                 }),
                 new Order({
@@ -88,8 +86,8 @@ export class StoreService {
                     metodoPago: 'Transferencia',
                     estatus: 'Pagado',
                     items: [
-                        { productId: 'HI-CIL-05', nombre: 'Bolsa 5 Kgs Cilíndrico', precio: 25.00, cantidadSalida: 20, cantidadDevuelta: 0 },
-                        { productId: 'HI-CIL-03', nombre: 'Bolsa 3 Kgs Cilíndrico', precio: 18.00, cantidadSalida: 10, cantidadDevuelta: 0 }
+                        { productId: 'HI-CIL-05', nombre: 'Bolsa 5 Kgs Cilíndrico', precio: 20.00, cantidadSalida: 20, cantidadDevuelta: 0 },
+                        { productId: 'HI-CIL-03', nombre: 'Bolsa 3 Kgs Cilíndrico', precio: 15.00, cantidadSalida: 10, cantidadDevuelta: 0 }
                     ]
                 }),
                 new Order({
@@ -100,7 +98,7 @@ export class StoreService {
                     metodoPago: 'Efectivo',
                     estatus: 'Pagado',
                     items: [
-                        { productId: 'HI-CIL-15', nombre: 'Bolsa 15 Kgs Cilíndrico', precio: 60.00, cantidadSalida: 4, cantidadDevuelta: 0 },
+                        { productId: 'HI-CIL-15', nombre: 'Bolsa 15 Kgs Cilíndrico', precio: 50.00, cantidadSalida: 4, cantidadDevuelta: 0 },
                         { productId: 'HI-GAR-20', nombre: 'Garrafón 20L', precio: 20.00, cantidadSalida: 3, cantidadDevuelta: 0 }
                     ]
                 })

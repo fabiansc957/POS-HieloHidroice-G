@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Hielo HidroIce POS - Estilos Institucionales e Impresión Térmica
+   Hielo HidroIce POS - Estilos Institucionales, Propuestas UI e Impresión Térmica
    Aguascalientes, México
    ========================================================================== */
 
@@ -31,6 +31,157 @@
 #modal-login::backdrop {
     background: linear-gradient(135deg, rgba(8, 51, 68, 0.92), rgba(15, 23, 42, 0.96));
     backdrop-filter: blur(8px);
+}
+
+/* Números tabulares para alineación financiera perfecta */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   ACOMODO DINÁMICO: INVERTIR POSICIÓN DEL TICKET RÁPIDO (IZQ / DER)
+   ========================================================================== */
+body.layout-ticket-left #view-pos > aside {
+    order: -1;
+}
+
+/* ==========================================================================
+   PROPUESTA UI 1: "GLACIAR EJECUTIVO — BENTO & GLASSMORPHISM"
+   Superficies cristalinas, gradientes árticos, sombras multicapa y Bento KPIs
+   ========================================================================== */
+body[data-ui-style="glaciar"] {
+    background:
+        radial-gradient(circle at 12% 0%, rgba(186, 230, 253, 0.55), transparent 42%),
+        radial-gradient(circle at 88% 12%, rgba(165, 243, 252, 0.45), transparent 38%),
+        linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 48%, #f1f5f9 100%) !important;
+    color: #0c4a6e;
+}
+
+body[data-ui-style="glaciar"] header {
+    background: linear-gradient(120deg, #083344 0%, #0e7490 55%, #0284c7 100%) !important;
+    box-shadow: 0 10px 30px -10px rgba(8, 145, 178, 0.45) !important;
+}
+
+body[data-ui-style="glaciar"] .surface-card {
+    background: rgba(255, 255, 255, 0.86) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(103, 232, 249, 0.55) !important;
+    box-shadow:
+        0 12px 32px -8px rgba(14, 116, 144, 0.10),
+        0 2px 6px -1px rgba(14, 116, 144, 0.05) !important;
+    border-radius: 1.25rem !important;
+}
+
+body[data-ui-style="glaciar"] .catalog-card-item {
+    background: linear-gradient(160deg, #ffffff 0%, #f0f9ff 100%) !important;
+    border: 1px solid #bae6fd !important;
+    box-shadow: 0 4px 14px -2px rgba(2, 132, 199, 0.08) !important;
+}
+
+body[data-ui-style="glaciar"] .catalog-card-item:hover {
+    transform: translateY(-2px);
+    border-color: #06b6d4 !important;
+    box-shadow: 0 12px 24px -6px rgba(6, 182, 212, 0.22) !important;
+}
+
+/* ==========================================================================
+   PROPUESTA UI 2: "TERMINAL INDUSTRIAL DARK — HIGH-CONTRAST TOUCH POS"
+   Modo nocturno de planta, alto contraste cian neón/pizarra y controles táctiles
+   ========================================================================== */
+body[data-ui-style="industrial-dark"] {
+    background:
+        radial-gradient(circle at 85% 5%, rgba(6, 182, 212, 0.14), transparent 35%),
+        linear-gradient(180deg, #060a12 0%, #0b1120 100%) !important;
+    color: #e2e8f0 !important;
+}
+
+body[data-ui-style="industrial-dark"] header {
+    background: #050811 !important;
+    border-bottom: 1px solid rgba(6, 182, 212, 0.35) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.65) !important;
+}
+
+body[data-ui-style="industrial-dark"] nav {
+    background: #0b1120 !important;
+    border-bottom: 1px solid #1e293b !important;
+}
+
+body[data-ui-style="industrial-dark"] nav .tabs-boxed {
+    background: #111827 !important;
+    border: 1px solid #1e293b;
+}
+
+body[data-ui-style="industrial-dark"] .surface-card,
+body[data-ui-style="industrial-dark"] .modal-box {
+    background: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55) !important;
+    color: #f1f5f9 !important;
+}
+
+body[data-ui-style="industrial-dark"] .catalog-card-item {
+    background: linear-gradient(165deg, #131c31 0%, #0f172a 100%) !important;
+    border: 1px solid #1e293b !important;
+}
+
+body[data-ui-style="industrial-dark"] .catalog-card-item:hover {
+    border-color: #22d3ee !important;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.20) !important;
+}
+
+body[data-ui-style="industrial-dark"] .text-slate-800,
+body[data-ui-style="industrial-dark"] .text-slate-700 {
+    color: #f1f5f9 !important;
+}
+
+body[data-ui-style="industrial-dark"] .text-slate-600,
+body[data-ui-style="industrial-dark"] .text-slate-500 {
+    color: #94a3b8 !important;
+}
+
+body[data-ui-style="industrial-dark"] .text-cyan-700,
+body[data-ui-style="industrial-dark"] .text-cyan-800,
+body[data-ui-style="industrial-dark"] .text-cyan-900 {
+    color: #22d3ee !important;
+}
+
+body[data-ui-style="industrial-dark"] .bg-slate-50,
+body[data-ui-style="industrial-dark"] .bg-slate-100 {
+    background-color: #162033 !important;
+    border-color: #26354d !important;
+    color: #e2e8f0 !important;
+}
+
+body[data-ui-style="industrial-dark"] input,
+body[data-ui-style="industrial-dark"] select {
+    background-color: #090d16 !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+body[data-ui-style="industrial-dark"] input:focus,
+body[data-ui-style="industrial-dark"] select:focus {
+    border-color: #22d3ee !important;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+
+body[data-ui-style="industrial-dark"] table thead tr {
+    background-color: #131c31 !important;
+    color: #94a3b8 !important;
+}
+
+body[data-ui-style="industrial-dark"] table tbody tr {
+    border-bottom-color: #1e293b !important;
+}
+
+body[data-ui-style="industrial-dark"] table tbody tr:hover {
+    background-color: rgba(6, 182, 212, 0.08) !important;
+}
+
+body[data-ui-style="industrial-dark"] .kpi-card {
+    background: linear-gradient(145deg, #111827 0%, #0f172a 100%) !important;
+    border: 1px solid #1e293b !important;
 }
 
 /* El contenedor de impresión térmica permanece oculto en pantalla normal */

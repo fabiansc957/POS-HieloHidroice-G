@@ -26,7 +26,65 @@ export class UIController {
         this.activeTab = 'pos';
         this.onTabChangedCallbacks = [];
 
+        this._initThemeAndLayoutPreferences();
         this._bindBaseEvents();
+    }
+
+    /**
+     * Inicializa y restaura la propuesta de estilo UI y posición del Ticket Rápido
+     * @private
+     */
+    _initThemeAndLayoutPreferences() {
+        const savedStyle = localStorage.getItem('hidroice_ui_style_v1') || 'glaciar';
+        const savedTicketSide = localStorage.getItem('hidroice_ticket_side_v1') || 'right';
+
+        this.setUIStyle(savedStyle, false);
+        if (savedTicketSide === 'left') {
+            document.body.classList.add('layout-ticket-left');
+        }
+    }
+
+    /**
+     * Cambia entre las 3 propuestas de diseño UI ('clasico' | 'glaciar' | 'industrial-dark')
+     * @param {string} styleName
+     * @param {boolean} [notify=true]
+     */
+    setUIStyle(styleName, notify = true) {
+        const validStyles = ['clasico', 'glaciar', 'industrial-dark'];
+        const chosen = validStyles.includes(styleName) ? styleName : 'glaciar';
+
+        document.body.setAttribute('data-ui-style', chosen);
+        localStorage.setItem('hidroice_ui_style_v1', chosen);
+
+        document.querySelectorAll('[data-ui-theme-btn]').forEach(btn => {
+            const btnStyle = btn.getAttribute('data-ui-theme-btn');
+            if (btnStyle === chosen) {
+                btn.className = 'btn btn-xs bg-cyan-600 text-white border-none rounded-lg font-bold shadow-xs';
+            } else {
+                btn.className = 'btn btn-xs btn-ghost text-slate-600 rounded-lg font-semibold';
+            }
+        });
+
+        if (notify) {
+            const labels = {
+                clasico: 'Propuesta 1: Clásico Institucional',
+                glaciar: 'Propuesta 2: Glaciar Ejecutivo (Bento & Cristal)',
+                'industrial-dark': 'Propuesta 3: Terminal Industrial Nocturna (High-Contrast)'
+            };
+            this.showToast(`Estilo activo: ${labels[chosen]}`, 'info');
+        }
+    }
+
+    /**
+     * Alterna la posición del Ticket Rápido entre Izquierda y Derecha para ergonomía del cajero
+     */
+    toggleTicketPosition() {
+        const isLeft = document.body.classList.toggle('layout-ticket-left');
+        localStorage.setItem('hidroice_ticket_side_v1', isLeft ? 'left' : 'right');
+        this.showToast(
+            isLeft ? 'Ticket Rápido acoplado a la izquierda' : 'Ticket Rápido acoplado a la derecha',
+            'info'
+        );
     }
 
     /**
@@ -38,12 +96,25 @@ export class UIController {
     }
 
     /**
-     * Inicializa eventos globales de navegación y corte de caja
+     * Inicializa eventos globales de navegación, selector de propuestas UI y corte de caja
      * @private
      */
     _bindBaseEvents() {
         if (this.tabPosBtn) {
             this.tabPosBtn.addEventListener('click', () => this.switchTab('pos'));
+        }
+
+        // Eventos para el selector de Propuestas de UI
+        document.querySelectorAll('[data-ui-theme-btn]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.setUIStyle(btn.getAttribute('data-ui-theme-btn'), true);
+            });
+        });
+
+        // Evento para invertir posición del Ticket Rápido (Izq/Der)
+        const btnToggleSide = document.getElementById('btn-toggle-ticket-side');
+        if (btnToggleSide) {
+            btnToggleSide.addEventListener('click', () => this.toggleTicketPosition());
         }
 
         const btnCloseCashCut = document.getElementById('btn-close-cash-cut');
@@ -192,12 +263,43 @@ export class UIController {
 
     /**
      * Actualiza el contador de notas pendientes en la pestaña de Cuentas por Cobrar
+     * y refresca el Bento Ribbon de KPIs en vivo.
      */
     updatePendingBadge() {
+        this.updateKpiRibbon();
         const badge = document.getElementById('cxc-nav-counter');
         if (!badge) return;
         const count = this.financeService.getPendingOrdersFIFO().length;
         badge.textContent = String(count);
+    }
+
+    /**
+     * Actualiza las 4 tarjetas superiores del Bento Ribbon de KPIs en tiempo real
+     */
+    updateKpiRibbon() {
+        const corte = this.financeService.generarCorteDiario();
+
+        const elVentaNeta = document.getElementById('kpi-venta-neta');
+        const elOpCount = document.getElementById('kpi-operaciones-count');
+        const elCobradoHoy = document.getElementById('kpi-cobrado-hoy');
+        const elCobradoSplit = document.getElementById('kpi-cobrado-split');
+        const elPendienteHoy = document.getElementById('kpi-pendiente-hoy');
+        const elPendienteNotes = document.getElementById('kpi-pendiente-notes');
+        const elUnidadesHoy = document.getElementById('kpi-unidades-hoy');
+        const elDevolucionesHoy = document.getElementById('kpi-devoluciones-hoy');
+
+        if (elVentaNeta) elVentaNeta.textContent = this.formatCurrency(corte.financiero.ventaTotalBrutaHoy);
+        if (elOpCount) elOpCount.textContent = `${corte.financiero.totalOperacionesHoy} nota(s) registradas hoy`;
+        if (elCobradoHoy) elCobradoHoy.textContent = this.formatCurrency(corte.financiero.totalIngresadoCaja);
+        if (elCobradoSplit) {
+            elCobradoSplit.textContent = `Efec: ${this.formatCurrency(corte.financiero.efectivoFisico)} | Transf: ${this.formatCurrency(corte.financiero.transferenciasBancarias)}`;
+        }
+        if (elPendienteHoy) elPendienteHoy.textContent = this.formatCurrency(corte.financiero.creditoPorCobrarHoy);
+        if (elPendienteNotes) elPendienteNotes.textContent = `${corte.financiero.operacionesPendientes} nota(s) por liquidar`;
+        if (elUnidadesHoy) elUnidadesHoy.textContent = `${corte.inventario.totales.netas} pzas`;
+        if (elDevolucionesHoy) {
+            elDevolucionesHoy.textContent = `${corte.inventario.totales.devueltas} devuelta(s) de ${corte.inventario.totales.salida} salidas`;
+        }
     }
 
     /**

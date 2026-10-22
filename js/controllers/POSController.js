@@ -34,10 +34,18 @@ export class POSController {
         this.ticketForm = document.getElementById('pos-ticket-form');
         this.btnClearCart = document.getElementById('btn-clear-cart');
 
-        // Tabla de Pedidos de Hoy
+        // Tabla de Pedidos de Hoy y Filtros
         this.todayOrdersTbody = document.getElementById('pos-today-orders-tbody');
         this.todayStatsCount = document.getElementById('pos-today-count');
         this.todayStatsTotal = document.getElementById('pos-today-total');
+        this.ordersSearchInput = document.getElementById('pos-orders-search');
+        this.ordersDriverFilter = document.getElementById('pos-orders-driver-filter');
+        this.ordersStatusFilter = document.getElementById('pos-orders-status-filter');
+
+        // Calculadora de Cambio y botón rápido Mostrador
+        this.btnQuickPublico = document.getElementById('btn-quick-publico');
+        this.cashReceivedInput = document.getElementById('pos-cash-received');
+        this.cashChangeEl = document.getElementById('pos-cash-change');
 
         // Modal de Devolución / Sobrante de Ruta
         this.returnModal = document.getElementById('modal-return');
@@ -76,8 +84,40 @@ export class POSController {
         if (this.btnClearCart) {
             this.btnClearCart.addEventListener('click', () => {
                 this.cart.clear();
+                if (this.cashReceivedInput) this.cashReceivedInput.value = '';
                 this.renderCart();
             });
+        }
+
+        if (this.btnQuickPublico) {
+            this.btnQuickPublico.addEventListener('click', () => {
+                if (this.clientInput) this.clientInput.value = 'Público en General';
+                if (this.driverSelect) this.driverSelect.value = 'Mostrador';
+            });
+        }
+
+        // Calculadora de cambio en efectivo
+        if (this.cashReceivedInput) {
+            this.cashReceivedInput.addEventListener('input', () => this._updateCashChange());
+        }
+        document.querySelectorAll('[data-cash-bill]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (this.cashReceivedInput) {
+                    this.cashReceivedInput.value = btn.getAttribute('data-cash-bill');
+                    this._updateCashChange();
+                }
+            });
+        });
+
+        // Filtros en vivo para la tabla de Pedidos de Hoy
+        if (this.ordersSearchInput) {
+            this.ordersSearchInput.addEventListener('input', () => this.renderTodayOrders());
+        }
+        if (this.ordersDriverFilter) {
+            this.ordersDriverFilter.addEventListener('change', () => this.renderTodayOrders());
+        }
+        if (this.ordersStatusFilter) {
+            this.ordersStatusFilter.addEventListener('change', () => this.renderTodayOrders());
         }
 
         if (this.btnCancelReturn) {
@@ -126,7 +166,7 @@ export class POSController {
             .map(product => `
                 <article
                     data-product-id="${product.id}"
-                    class="group cursor-pointer rounded-2xl bg-white border border-cyan-100 hover:border-cyan-400 shadow-sm hover:shadow-md transition-all duration-200 p-4 flex flex-col justify-between select-none active:scale-[0.98]">
+                    class="catalog-card-item group cursor-pointer rounded-2xl bg-white border border-cyan-100 hover:border-cyan-400 shadow-sm hover:shadow-md transition-all duration-200 p-4 flex flex-col justify-between select-none">
                     <div class="flex items-start justify-between gap-2">
                         ${iconMap[product.tipo] || iconMap.hielo_cilindrico}
                         <span class="badge badge-sm bg-cyan-50 text-cyan-800 border-cyan-200 font-semibold">
@@ -141,19 +181,47 @@ export class POSController {
                         <p class="text-xs text-slate-400 mt-0.5">Código: ${product.id}</p>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span class="text-xl font-extrabold text-cyan-700">
-                            ${product.getPrecioFormateado()}
-                        </span>
-                        <span class="btn btn-xs bg-cyan-600 hover:bg-cyan-500 text-white border-none rounded-lg px-2.5">
-                            + Agregar
-                        </span>
+                    <div class="mt-3 pt-2.5 border-t border-slate-100 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xl font-extrabold text-cyan-700 tabular-nums">
+                                ${product.getPrecioFormateado()}
+                            </span>
+                            <button type="button" data-quick-add="${product.id}" data-qty="1"
+                                class="btn btn-xs bg-cyan-600 hover:bg-cyan-500 text-white border-none rounded-lg px-2.5 font-bold">
+                                +1 Pza
+                            </button>
+                        </div>
+
+                        <!-- Atajos de Mayoreo / Carga de Camión -->
+                        <div class="grid grid-cols-3 gap-1">
+                            <button type="button" data-quick-add="${product.id}" data-qty="5"
+                                class="btn btn-xs btn-outline border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 text-slate-600 hover:text-cyan-900 font-bold rounded-lg">
+                                +5
+                            </button>
+                            <button type="button" data-quick-add="${product.id}" data-qty="10"
+                                class="btn btn-xs btn-outline border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 text-slate-600 hover:text-cyan-900 font-bold rounded-lg">
+                                +10
+                            </button>
+                            <button type="button" data-quick-add="${product.id}" data-qty="20"
+                                class="btn btn-xs btn-outline border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 text-slate-600 hover:text-cyan-900 font-bold rounded-lg">
+                                +20
+                            </button>
+                        </div>
                     </div>
                 </article>
             `)
             .join('');
 
-        // Asignar eventos de clic a cada tarjeta del catálogo
+        // Asignar eventos de clic a los botones rápidos (+1, +5, +10, +20) y a la tarjeta
+        this.catalogGrid.querySelectorAll('[data-quick-add]').forEach(btn => {
+            btn.addEventListener('click', event => {
+                event.stopPropagation();
+                const productId = btn.getAttribute('data-quick-add');
+                const qty = parseInt(btn.getAttribute('data-qty'), 10) || 1;
+                this.addToCart(productId, qty);
+            });
+        });
+
         this.catalogGrid.querySelectorAll('[data-product-id]').forEach(card => {
             card.addEventListener('click', () => {
                 const productId = card.getAttribute('data-product-id');
@@ -262,6 +330,35 @@ export class POSController {
         if (this.cartTotalEl) {
             this.cartTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
         }
+        this._updateCashChange();
+    }
+
+    /**
+     * Calcula en tiempo real el cambio a devolver al cliente cuando paga en efectivo
+     * @private
+     */
+    _updateCashChange() {
+        if (!this.cashChangeEl) return;
+        let totalImporte = 0;
+        this.cart.forEach(item => {
+            totalImporte += Number(item.precioUnitario ?? item.product.precio) * item.cantidad;
+        });
+
+        const recibido = parseFloat(this.cashReceivedInput?.value || '0');
+        if (!recibido || recibido <= 0 || totalImporte <= 0) {
+            this.cashChangeEl.textContent = '$0.00';
+            this.cashChangeEl.className = 'text-sm font-black text-emerald-600 tabular-nums';
+            return;
+        }
+
+        const cambio = recibido - totalImporte;
+        if (cambio >= 0) {
+            this.cashChangeEl.textContent = this.uiController.formatCurrency(cambio);
+            this.cashChangeEl.className = 'text-sm font-black text-emerald-600 tabular-nums';
+        } else {
+            this.cashChangeEl.textContent = `Faltan ${this.uiController.formatCurrency(Math.abs(cambio))}`;
+            this.cashChangeEl.className = 'text-xs font-extrabold text-amber-600 tabular-nums';
+        }
     }
 
     /**
@@ -279,6 +376,7 @@ export class POSController {
             `;
             if (this.cartTotalEl) this.cartTotalEl.textContent = '$0.00';
             if (this.cartUnitsEl) this.cartUnitsEl.textContent = '0 pzas';
+            this._updateCashChange();
             return;
         }
 
@@ -353,6 +451,7 @@ export class POSController {
         this.cartItemsContainer.innerHTML = rowsHtml.join('');
         if (this.cartTotalEl) this.cartTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
         if (this.cartUnitsEl) this.cartUnitsEl.textContent = `${totalUnidades} pzas`;
+        this._updateCashChange();
 
         // Eventos de botones +/- e input directo de cantidad
         this.cartItemsContainer.querySelectorAll('[data-cart-dec]').forEach(btn => {
@@ -433,6 +532,7 @@ export class POSController {
         // Limpiar carrito y refrescar vistas
         this.cart.clear();
         if (this.clientInput) this.clientInput.value = '';
+        if (this.cashReceivedInput) this.cashReceivedInput.value = '';
         this.renderCart();
         this.renderClientsDatalist();
         this.renderTodayOrders();
@@ -449,25 +549,44 @@ export class POSController {
     }
 
     /**
-     * Renderiza la Tabla de Pedidos de Hoy (Abajo Izquierda)
+     * Renderiza la Tabla de Pedidos de Hoy (Abajo Izquierda) aplicando búsqueda y filtros en vivo
      */
     renderTodayOrders() {
         if (!this.todayOrdersTbody) return;
-        const orders = this.storeService.getTodayOrders();
+        const allTodayOrders = this.storeService.getTodayOrders();
 
-        let sumaTotalDia = 0;
-        orders.forEach(o => {
-            sumaTotalDia += o.total;
+        const searchTerm = (this.ordersSearchInput?.value || '').trim().toLowerCase();
+        const driverFilter = this.ordersDriverFilter?.value || 'todos';
+        const statusFilter = this.ordersStatusFilter?.value || 'todos';
+
+        const orders = allTodayOrders.filter(order => {
+            const matchesSearch =
+                !searchTerm ||
+                order.folio.toLowerCase().includes(searchTerm) ||
+                order.clienteNombre.toLowerCase().includes(searchTerm);
+            const matchesDriver = driverFilter === 'todos' || order.repartidor === driverFilter;
+            const matchesStatus = statusFilter === 'todos' || order.estatus === statusFilter;
+            return matchesSearch && matchesDriver && matchesStatus;
         });
 
-        if (this.todayStatsCount) this.todayStatsCount.textContent = `${orders.length} operaciones`;
-        if (this.todayStatsTotal) this.todayStatsTotal.textContent = this.uiController.formatCurrency(sumaTotalDia);
+        let sumaTotalFiltrado = 0;
+        orders.forEach(o => {
+            sumaTotalFiltrado += o.total;
+        });
+
+        if (this.todayStatsCount) {
+            this.todayStatsCount.textContent =
+                orders.length === allTodayOrders.length
+                    ? `${orders.length} operaciones`
+                    : `${orders.length} de ${allTodayOrders.length} operaciones`;
+        }
+        if (this.todayStatsTotal) this.todayStatsTotal.textContent = this.uiController.formatCurrency(sumaTotalFiltrado);
 
         if (orders.length === 0) {
             this.todayOrdersTbody.innerHTML = `
                 <tr>
                     <td colspan="8" class="text-center py-8 text-slate-400">
-                        No hay operaciones registradas el día de hoy.
+                        No se encontraron operaciones con los filtros seleccionados.
                     </td>
                 </tr>
             `;

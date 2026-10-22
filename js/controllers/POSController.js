@@ -47,6 +47,11 @@ export class POSController {
         this.cashReceivedInput = document.getElementById('pos-cash-received');
         this.cashChangeEl = document.getElementById('pos-cash-change');
 
+        // Barra flotante inferior para Móvil y Tablet
+        this.mobileBarUnitsEl = document.getElementById('mobile-bar-units');
+        this.mobileBarTotalEl = document.getElementById('mobile-bar-total');
+        this.btnMobileGoTicket = document.getElementById('btn-mobile-go-ticket');
+
         // Modal de Devolución / Sobrante de Ruta
         this.returnModal = document.getElementById('modal-return');
         this.returnForm = document.getElementById('form-return');
@@ -93,6 +98,16 @@ export class POSController {
             this.btnQuickPublico.addEventListener('click', () => {
                 if (this.clientInput) this.clientInput.value = 'Público en General';
                 if (this.driverSelect) this.driverSelect.value = 'Mostrador';
+            });
+        }
+
+        if (this.btnMobileGoTicket) {
+            this.btnMobileGoTicket.addEventListener('click', () => {
+                setTimeout(() => {
+                    if (this.clientInput && !this.clientInput.value) {
+                        this.clientInput.focus();
+                    }
+                }, 350);
             });
         }
 
@@ -324,11 +339,19 @@ export class POSController {
         }
 
         let totalImporte = 0;
+        let totalUnidades = 0;
         this.cart.forEach(item => {
             totalImporte += item.precioUnitario * item.cantidad;
+            totalUnidades += item.cantidad;
         });
         if (this.cartTotalEl) {
             this.cartTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
+        }
+        if (this.mobileBarTotalEl) {
+            this.mobileBarTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
+        }
+        if (this.mobileBarUnitsEl) {
+            this.mobileBarUnitsEl.textContent = `${totalUnidades} pzas`;
         }
         this._updateCashChange();
     }
@@ -376,6 +399,8 @@ export class POSController {
             `;
             if (this.cartTotalEl) this.cartTotalEl.textContent = '$0.00';
             if (this.cartUnitsEl) this.cartUnitsEl.textContent = '0 pzas';
+            if (this.mobileBarTotalEl) this.mobileBarTotalEl.textContent = '$0.00';
+            if (this.mobileBarUnitsEl) this.mobileBarUnitsEl.textContent = '0 pzas';
             this._updateCashChange();
             return;
         }
@@ -451,6 +476,8 @@ export class POSController {
         this.cartItemsContainer.innerHTML = rowsHtml.join('');
         if (this.cartTotalEl) this.cartTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
         if (this.cartUnitsEl) this.cartUnitsEl.textContent = `${totalUnidades} pzas`;
+        if (this.mobileBarTotalEl) this.mobileBarTotalEl.textContent = this.uiController.formatCurrency(totalImporte);
+        if (this.mobileBarUnitsEl) this.mobileBarUnitsEl.textContent = `${totalUnidades} pzas`;
         this._updateCashChange();
 
         // Eventos de botones +/- e input directo de cantidad
@@ -619,40 +646,40 @@ export class POSController {
                     : `<span class="badge badge-warning badge-sm font-bold text-amber-950 gap-1">Pendiente</span>`;
 
                 return `
-                    <tr class="hover:bg-cyan-50/40 transition-colors border-b border-slate-100">
-                        <td class="font-mono font-bold text-cyan-800 whitespace-nowrap">
-                            <div>${order.folio}</div>
-                            <div class="text-[11px] font-normal text-slate-400">${hora}</div>
+                    <tr class="responsive-row hover:bg-cyan-50/40 transition-colors border-b border-slate-100">
+                        <td data-label="Folio / Hora" class="font-mono font-bold text-cyan-800 whitespace-nowrap">
+                            <div>${order.folio} <span class="md:hidden text-xs font-normal text-slate-400">(${hora})</span></div>
+                            <div class="hidden md:block text-[11px] font-normal text-slate-400">${hora}</div>
                         </td>
-                        <td>
+                        <td data-label="Cliente / Ruta">
                             <div class="font-bold text-slate-800">${order.clienteNombre}</div>
-                            <div class="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                            <div class="text-xs text-slate-500 flex items-center justify-end md:justify-start gap-1.5 mt-0.5">
                                 <span class="badge badge-ghost badge-xs">${order.repartidor}</span>
                                 <span>•</span>
                                 <span>${order.metodoPago === 'Efectivo' ? '💵 Efectivo' : '📱 Transferencia'}</span>
                             </div>
                         </td>
-                        <td class="max-w-xs">
-                            <div class="flex flex-wrap">${detalleItems}</div>
+                        <td data-label="Productos Netos" class="mobile-full-cell max-w-xs">
+                            <div class="flex flex-wrap mt-1 md:mt-0">${detalleItems}</div>
                             <div class="text-[11px] text-slate-400 mt-0.5">
                                 Salida: ${resumenUnidades.totalSalida} | Dev: ${resumenUnidades.totalDevuelto} | Neto: <strong>${resumenUnidades.totalNeto} pzas</strong>
                             </div>
                         </td>
-                        <td class="text-right font-extrabold text-slate-800 whitespace-nowrap">
+                        <td data-label="Total Neto" class="text-right font-extrabold text-slate-800 whitespace-nowrap tabular-nums">
                             ${this.uiController.formatCurrency(order.total)}
                         </td>
-                        <td class="text-right font-bold whitespace-nowrap ${order.saldoPendiente > 0 ? 'text-amber-600' : 'text-emerald-600'}">
+                        <td data-label="Saldo" class="text-right font-bold whitespace-nowrap tabular-nums ${order.saldoPendiente > 0 ? 'text-amber-600' : 'text-emerald-600'}">
                             ${this.uiController.formatCurrency(order.saldoPendiente)}
                         </td>
-                        <td class="text-center whitespace-nowrap">
+                        <td data-label="Estatus" class="text-center whitespace-nowrap">
                             ${statusBadge}
                         </td>
-                        <td class="text-right whitespace-nowrap">
-                            <div class="flex items-center justify-end gap-1.5">
+                        <td data-label="Acciones" class="text-right whitespace-nowrap">
+                            <div class="flex flex-wrap items-center justify-end gap-1.5 w-full md:w-auto">
                                 <button type="button"
                                     data-action-return="${order.folio}"
                                     title="Registrar Devolución / Sobrante de Ruta"
-                                    class="btn btn-xs bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-semibold">
+                                    class="btn btn-xs sm:btn-sm md:btn-xs bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-semibold">
                                     🔄 Devolución/Sobrante
                                 </button>
 
@@ -660,7 +687,7 @@ export class POSController {
                                     <button type="button"
                                         data-action-mark-paid="${order.folio}"
                                         title="Liquidar nota al 100% (Saldo pasa a $0.00)"
-                                        class="btn btn-xs bg-emerald-600 hover:bg-emerald-500 text-white border-none font-semibold">
+                                        class="btn btn-xs sm:btn-sm md:btn-xs bg-emerald-600 hover:bg-emerald-500 text-white border-none font-semibold">
                                         ✓ Marcar Pagado
                                     </button>
                                 ` : ''}
@@ -668,7 +695,7 @@ export class POSController {
                                 <button type="button"
                                     data-action-print="${order.folio}"
                                     title="Imprimir Ticket Térmico"
-                                    class="btn btn-xs btn-ghost border border-slate-200 hover:bg-slate-100 text-slate-700">
+                                    class="btn btn-xs sm:btn-sm md:btn-xs btn-ghost border border-slate-200 hover:bg-slate-100 text-slate-700">
                                     🖨️
                                 </button>
                             </div>

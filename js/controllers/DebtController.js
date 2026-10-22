@@ -170,29 +170,29 @@ export class DebtController {
                     : `<span class="badge badge-ghost badge-xs mr-1">#${idx + 1} FIFO</span>`;
 
                 return `
-                    <tr class="hover:bg-cyan-50/40 border-b border-slate-100">
-                        <td class="font-mono font-bold text-cyan-800">
+                    <tr class="responsive-row hover:bg-cyan-50/40 border-b border-slate-100">
+                        <td data-label="Folio / Prioridad" class="font-mono font-bold text-cyan-800">
                             <div>${order.folio}</div>
                             <div class="mt-0.5">${fifoPriorityBadge}</div>
                         </td>
-                        <td class="text-xs text-slate-600 whitespace-nowrap">${fechaStr}</td>
-                        <td>
+                        <td data-label="Fecha Emisión" class="text-xs text-slate-600 whitespace-nowrap">${fechaStr}</td>
+                        <td data-label="Cliente / Ruta">
                             <div class="font-bold text-slate-800">${order.clienteNombre}</div>
                             <div class="text-xs text-slate-400">Ruta: ${order.repartidor}</div>
                         </td>
-                        <td class="text-right font-semibold text-slate-700">
+                        <td data-label="Total Nota" class="text-right font-semibold text-slate-700 tabular-nums">
                             ${this.uiController.formatCurrency(order.total)}
                         </td>
-                        <td class="text-right font-semibold text-emerald-600">
+                        <td data-label="Abonado" class="text-right font-semibold text-emerald-600 tabular-nums">
                             ${this.uiController.formatCurrency(order.montoAbonado)}
                         </td>
-                        <td class="text-right font-extrabold text-amber-600 text-base">
+                        <td data-label="Saldo Pendiente" class="text-right font-extrabold text-amber-600 text-base tabular-nums">
                             ${this.uiController.formatCurrency(order.saldoPendiente)}
                         </td>
-                        <td class="text-right">
+                        <td data-label="Acción" class="text-right">
                             <button type="button"
                                 data-cxc-select-client="${order.clienteNombre}"
-                                class="btn btn-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200">
+                                class="btn btn-xs sm:btn-sm md:btn-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 font-semibold">
                                 Enfocar Cliente
                             </button>
                         </td>
@@ -210,6 +210,9 @@ export class DebtController {
                     this.clientFilterSelect.value = clientName;
                 }
                 this.renderPendingTable();
+                if (window.innerWidth < 1024 && this.fifoForm) {
+                    this.fifoForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             });
         });
     }

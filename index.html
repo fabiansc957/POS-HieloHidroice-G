@@ -2,14 +2,14 @@
 <html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>Hielo HidroIce | POS & Logística de Distribución — Aguascalientes</title>
 
     <!-- Tailwind CSS & daisyUI vía CDN -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Estilos personalizados, Propuestas UI e Impresión Térmica (@media print) -->
+    <!-- Estilos personalizados, Propuestas UI, Responsividad e Impresión Térmica (@media print) -->
     <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body data-ui-style="glaciar" class="min-h-screen bg-slate-100 text-slate-800 antialiased transition-colors duration-300">
@@ -24,18 +24,18 @@
          ===================================================================== -->
     <div id="app-main-shell" class="min-h-screen flex flex-col transition-all duration-300 blur-sm pointer-events-none select-none">
 
-        <!-- BARRA SUPERIOR INSTITUCIONAL -->
+        <!-- BARRA SUPERIOR INSTITUCIONAL (Adaptable a Móvil, Tablet y Escritorio) -->
         <header class="bg-gradient-to-r from-slate-900 via-cyan-950 to-sky-900 text-white shadow-lg border-b border-cyan-800/60 sticky top-0 z-30">
-            <div class="max-w-[1440px] mx-auto px-4 lg:px-6 h-16 flex items-center justify-between gap-4">
+            <div class="max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-6 py-2.5 sm:py-0 sm:h-16 flex flex-wrap items-center justify-between gap-2">
 
                 <!-- Identidad Hielo HidroIce -->
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-2xl shadow-inner">
+                <div class="flex items-center gap-2.5 sm:gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-xl sm:text-2xl shadow-inner shrink-0">
                         ❄️
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h1 class="font-black tracking-tight text-lg sm:text-xl text-white">
+                            <h1 class="font-black tracking-tight text-base sm:text-xl text-white leading-tight">
                                 HIELO <span class="text-cyan-400">HIDROICE</span>
                             </h1>
                             <span class="hidden md:inline-block badge badge-xs bg-cyan-500/20 text-cyan-200 border-cyan-400/30 font-semibold py-2 px-2">
@@ -49,7 +49,7 @@
                 </div>
 
                 <!-- Acciones derechas: Slot Admin (Corte de Caja), Reloj y Sesión -->
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 sm:gap-3 ml-auto">
                     <span id="nav-live-clock" class="hidden xl:inline-block text-xs font-mono text-cyan-200/90 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-cyan-800/50"></span>
 
                     <!-- Slot dinámico RBAC para botón "Corte de Caja Diario" (Destruido del DOM si es Cajero) -->
@@ -57,13 +57,13 @@
 
                     <div class="h-6 w-px bg-cyan-800 hidden sm:block"></div>
 
-                    <div class="flex items-center gap-2 bg-slate-900/60 border border-cyan-800/60 rounded-xl px-3 py-1.5">
+                    <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-900/60 border border-cyan-800/60 rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5">
                         <div class="text-right">
-                            <p id="nav-user-name" class="text-xs font-bold text-white leading-none">Sin sesión</p>
-                            <span id="nav-user-badge" class="badge badge-ghost badge-xs mt-1">BLOQUEADO</span>
+                            <p id="nav-user-name" class="text-[11px] sm:text-xs font-bold text-white leading-none truncate max-w-[95px] sm:max-w-none">Sin sesión</p>
+                            <span id="nav-user-badge" class="badge badge-ghost badge-xs mt-0.5 text-[10px]">BLOQUEADO</span>
                         </div>
                         <button id="btn-logout" type="button" title="Cerrar Sesión / Cambiar Usuario"
-                            class="btn btn-xs btn-ghost text-cyan-200 hover:text-white hover:bg-red-500/20 ml-1">
+                            class="btn btn-xs btn-ghost text-cyan-200 hover:text-white hover:bg-red-500/20 px-2">
                             Salir
                         </button>
                     </div>
@@ -73,14 +73,15 @@
 
         <!-- BARRA DE PESTAÑAS DE NAVEGACIÓN (RBAC) + CONMUTADOR DE PROPUESTAS UI -->
         <nav class="bg-white border-b border-slate-200 shadow-xs">
-            <div class="max-w-[1440px] mx-auto px-4 lg:px-6 py-2 flex items-center justify-between flex-wrap gap-3">
-                <div role="tablist" class="tabs tabs-boxed bg-slate-100 p-1 gap-1">
+            <div class="max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-6 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+                <!-- Pestañas principales (POS / CxC) -->
+                <div role="tablist" class="tabs tabs-boxed bg-slate-100 p-1 gap-1 w-full md:w-auto grid grid-cols-1 sm:flex">
                     <button id="tab-btn-pos" type="button" role="tab"
-                        class="tab tab-active bg-cyan-600 text-white gap-2 font-semibold transition-all duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        class="tab tab-active bg-cyan-600 text-white gap-1.5 font-semibold transition-all duration-200 h-9 sm:h-8 text-xs sm:text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span>Punto de Venta y Operación de Hoy</span>
+                        <span>Punto de Venta y Operación</span>
                     </button>
 
                     <!-- Slot dinámico RBAC para pestaña "Cuentas por Cobrar" (Destruido del DOM si es Cajero) -->
@@ -88,118 +89,131 @@
                 </div>
 
                 <!-- BARRA DE PERSONALIZACIÓN UI / UX (2 Nuevas Propuestas + Clásico + Inversión de Acomodo) -->
-                <div class="flex items-center flex-wrap gap-2">
-                    <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 gap-1">
-                        <span class="text-[11px] font-bold text-slate-500 px-2 hidden sm:inline">🎨 Estilo UI:</span>
+                <div class="flex items-center justify-between md:justify-end flex-wrap gap-2">
+                    <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 gap-1 w-full sm:w-auto justify-between sm:justify-start">
+                        <span class="text-[11px] font-bold text-slate-500 px-1.5 hidden xl:inline">🎨 Estilo UI:</span>
                         <button type="button" data-ui-theme-btn="clasico"
-                            class="btn btn-xs border-none rounded-lg font-bold">
+                            class="btn btn-xs border-none rounded-lg font-bold flex-1 sm:flex-initial">
                             1. Clásico
                         </button>
                         <button type="button" data-ui-theme-btn="glaciar"
-                            class="btn btn-xs border-none rounded-lg font-bold">
-                            2. Glaciar Bento
+                            class="btn btn-xs border-none rounded-lg font-bold flex-1 sm:flex-initial">
+                            2. Glaciar
                         </button>
                         <button type="button" data-ui-theme-btn="industrial-dark"
-                            class="btn btn-xs border-none rounded-lg font-bold">
-                            3. Terminal Dark
+                            class="btn btn-xs border-none rounded-lg font-bold flex-1 sm:flex-initial">
+                            3. Dark POS
                         </button>
                     </div>
 
                     <button id="btn-toggle-ticket-side" type="button"
-                        title="Cambiar posición del Ticket Rápido (Izquierda / Derecha)"
-                        class="btn btn-xs btn-outline border-cyan-300 text-cyan-800 hover:bg-cyan-50 font-bold gap-1 rounded-lg">
+                        title="Cambiar posición del Ticket Rápido (Izquierda / Derecha en Escritorio)"
+                        class="hidden lg:inline-flex btn btn-xs btn-outline border-cyan-300 text-cyan-800 hover:bg-cyan-50 font-bold gap-1 rounded-lg">
                         ⇄ Mover Ticket
                     </button>
                 </div>
             </div>
+
+            <!-- SUB-NAVEGACIÓN TÁCTIL RÁPIDA (EXCLUSIVA MÓVIL Y TABLET < 1024px) -->
+            <div id="mobile-pos-jumpbar" class="lg:hidden px-3 pb-2 pt-0.5 flex items-center gap-1.5 overflow-x-auto">
+                <a href="#section-catalog" class="btn btn-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 rounded-lg flex-1 font-bold">
+                    🧊 Catálogo
+                </a>
+                <a href="#section-ticket" class="btn btn-xs bg-cyan-600 hover:bg-cyan-500 text-white border-none rounded-lg flex-1 font-bold">
+                    🧾 Capturar Ticket
+                </a>
+                <a href="#section-orders-today" class="btn btn-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg flex-1 font-bold">
+                    🚚 Pedidos Hoy
+                </a>
+            </div>
         </nav>
 
         <!-- CONTENIDO PRINCIPAL -->
-        <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 lg:px-6 py-5 space-y-5">
+        <main class="flex-1 max-w-[1440px] w-full mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
 
             <!-- =================================================================
                  BENTO RIBBON DE KPIs OPERATIVOS EN TIEMPO REAL
                  ================================================================= -->
-            <section id="pos-kpi-ribbon" class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-                <div class="kpi-card surface-card bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
-                    <div>
-                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Venta Neta Hoy</span>
-                        <span id="kpi-venta-neta" class="text-xl sm:text-2xl font-black text-cyan-800 tabular-nums mt-0.5 block">$0.00</span>
-                        <span id="kpi-operaciones-count" class="text-[11px] text-slate-500">0 notas registradas</span>
+            <section id="pos-kpi-ribbon" class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+                <div class="kpi-card surface-card bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block truncate">Venta Neta Hoy</span>
+                        <span id="kpi-venta-neta" class="text-lg sm:text-2xl font-black text-cyan-800 tabular-nums mt-0.5 block truncate">$0.00</span>
+                        <span id="kpi-operaciones-count" class="text-[10px] sm:text-[11px] text-slate-500 block truncate">0 notas registradas</span>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-700 flex items-center justify-center text-lg font-bold">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/15 text-cyan-700 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                         📈
                     </div>
                 </div>
 
-                <div class="kpi-card surface-card bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
-                    <div>
-                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Ingresado en Caja</span>
-                        <span id="kpi-cobrado-hoy" class="text-xl sm:text-2xl font-black text-emerald-600 tabular-nums mt-0.5 block">$0.00</span>
-                        <span id="kpi-cobrado-split" class="text-[11px] text-slate-500">Efec: $0 | Transf: $0</span>
+                <div class="kpi-card surface-card bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block truncate">Ingresado en Caja</span>
+                        <span id="kpi-cobrado-hoy" class="text-lg sm:text-2xl font-black text-emerald-600 tabular-nums mt-0.5 block truncate">$0.00</span>
+                        <span id="kpi-cobrado-split" class="text-[10px] sm:text-[11px] text-slate-500 block truncate">Efec: $0 | Transf: $0</span>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                         💵
                     </div>
                 </div>
 
-                <div class="kpi-card surface-card bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
-                    <div>
-                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Crédito Ruta (Hoy)</span>
-                        <span id="kpi-pendiente-hoy" class="text-xl sm:text-2xl font-black text-amber-600 tabular-nums mt-0.5 block">$0.00</span>
-                        <span id="kpi-pendiente-notes" class="text-[11px] text-slate-500">0 notas por liquidar</span>
+                <div class="kpi-card surface-card bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block truncate">Crédito Ruta (Hoy)</span>
+                        <span id="kpi-pendiente-hoy" class="text-lg sm:text-2xl font-black text-amber-600 tabular-nums mt-0.5 block truncate">$0.00</span>
+                        <span id="kpi-pendiente-notes" class="text-[10px] sm:text-[11px] text-slate-500 block truncate">0 notas por liquidar</span>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center text-lg font-bold">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                         ⏳
                     </div>
                 </div>
 
-                <div class="kpi-card surface-card bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
-                    <div>
-                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Volumen Neto Hoy</span>
-                        <span id="kpi-unidades-hoy" class="text-xl sm:text-2xl font-black text-sky-700 tabular-nums mt-0.5 block">0 pzas</span>
-                        <span id="kpi-devoluciones-hoy" class="text-[11px] text-slate-500">0 devueltas en ruta</span>
+                <div class="kpi-card surface-card bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block truncate">Volumen Neto Hoy</span>
+                        <span id="kpi-unidades-hoy" class="text-lg sm:text-2xl font-black text-sky-700 tabular-nums mt-0.5 block truncate">0 pzas</span>
+                        <span id="kpi-devoluciones-hoy" class="text-[10px] sm:text-[11px] text-slate-500 block truncate">0 devueltas en ruta</span>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-600 flex items-center justify-center text-lg font-bold">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-500/15 text-sky-600 flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
                         🧊
                     </div>
                 </div>
             </section>
 
             <!-- =================================================================
-                 VISTA 1: POS / OPERACIÓN DE HOY
+                 VISTA 1: POS / OPERACIÓN DE HOY (Responsivo Móvil / Tablet / Desktop)
                  ================================================================= -->
-            <section id="view-pos" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <section id="view-pos" class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
 
-                <!-- COLUMNA PRINCIPAL (8 cols): Catálogo + Tabla Pedidos de Hoy -->
-                <div class="lg:col-span-8 space-y-6">
+                <!-- COLUMNA PRINCIPAL (8 cols en Desktop): Catálogo + Tabla Pedidos de Hoy -->
+                <div class="lg:col-span-8 space-y-5 sm:space-y-6">
 
                     <!-- Catálogo de Productos con Multiplicadores de Mayoreo -->
-                    <div class="surface-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <div id="section-catalog" class="surface-card bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 scroll-mt-20">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                             <div>
-                                <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                                <h2 class="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-2">
                                     <span class="text-cyan-600">🧊</span> Catálogo Oficial Hielo HidroIce
                                 </h2>
                                 <p class="text-xs text-slate-500">
-                                    Toca una tarjeta para sumar <strong>+1</strong> o usa los botones rápidos <strong>+5 / +10 / +20</strong> para carga de ruta y mayoreo
+                                    Toca una tarjeta para sumar <strong>+1</strong> o usa los botones táctiles <strong>+5 / +10 / +20</strong> para carga rápida
                                 </p>
                             </div>
-                            <span class="badge bg-cyan-50 text-cyan-800 border-cyan-200 font-semibold text-xs">
+                            <span class="badge bg-cyan-50 text-cyan-800 border-cyan-200 font-semibold text-xs self-start sm:self-auto">
                                 Hielo Cilíndrico • Planta Ags
                             </span>
                         </div>
 
-                        <div id="pos-catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                        <div id="pos-catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5">
                             <!-- Tarjetas inyectadas por POSController.js -->
                         </div>
                     </div>
 
                     <!-- Tabla de Pedidos / Operaciones de Hoy con Barra de Filtros en Vivo -->
-                    <div class="surface-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <div id="section-orders-today" class="surface-card bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 scroll-mt-20">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                             <div>
-                                <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                                <h2 class="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-2">
                                     <span class="text-cyan-600">🚚</span> Pedidos y Salidas de Ruta de Hoy
                                 </h2>
                                 <p class="text-xs text-slate-500">
@@ -207,7 +221,7 @@
                                 </p>
                             </div>
 
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 self-start sm:self-auto">
                                 <span id="pos-today-count" class="badge badge-ghost font-semibold tabular-nums">0 operaciones</span>
                                 <span id="pos-today-total" class="badge bg-cyan-700 text-white border-none font-bold py-3 px-3 tabular-nums">$0.00</span>
                             </div>
@@ -218,10 +232,10 @@
                             <div class="sm:col-span-5">
                                 <input id="pos-orders-search" type="search"
                                     placeholder="🔍 Buscar por folio (HI-1001) o cliente..."
-                                    class="input input-xs sm:input-sm input-bordered w-full font-medium" />
+                                    class="input input-sm input-bordered w-full font-medium" />
                             </div>
                             <div class="sm:col-span-4">
-                                <select id="pos-orders-driver-filter" class="select select-xs sm:select-sm select-bordered w-full font-semibold">
+                                <select id="pos-orders-driver-filter" class="select select-sm select-bordered w-full font-semibold">
                                     <option value="todos">🚚 Todas las Rutas / Repartidores</option>
                                     <option value="Mostrador">Mostrador Planta</option>
                                     <option value="Juan Pérez">Juan Pérez</option>
@@ -230,7 +244,7 @@
                                 </select>
                             </div>
                             <div class="sm:col-span-3">
-                                <select id="pos-orders-status-filter" class="select select-xs sm:select-sm select-bordered w-full font-semibold">
+                                <select id="pos-orders-status-filter" class="select select-sm select-bordered w-full font-semibold">
                                     <option value="todos">📋 Todos los Estatus</option>
                                     <option value="Pendiente">⏳ Solo Pendientes</option>
                                     <option value="Pagado">✅ Solo Pagados</option>
@@ -239,7 +253,7 @@
                         </div>
 
                         <div class="overflow-x-auto">
-                            <table class="table table-sm w-full">
+                            <table class="table table-sm w-full responsive-table">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-600 text-xs uppercase">
                                         <th>Folio / Hora</th>
@@ -252,27 +266,27 @@
                                     </tr>
                                 </thead>
                                 <tbody id="pos-today-orders-tbody">
-                                    <!-- Filas inyectadas por POSController.js -->
+                                    <!-- Filas / Tarjetas responsivas inyectadas por POSController.js -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- COLUMNA LATERAL (4 cols): Ticket Rápido -->
-                <aside class="lg:col-span-4 surface-card bg-white rounded-2xl shadow-md border border-cyan-200/80 p-5 sticky top-20">
+                <!-- COLUMNA LATERAL (4 cols en Desktop): Ticket Rápido -->
+                <aside id="section-ticket" class="lg:col-span-4 surface-card bg-white rounded-2xl shadow-md border border-cyan-200/80 p-4 sm:p-5 lg:sticky lg:top-20 scroll-mt-20">
                     <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                         <div>
-                            <h2 class="text-lg font-extrabold text-slate-800">🧾 Ticket Rápido</h2>
+                            <h2 class="text-base sm:text-lg font-extrabold text-slate-800">🧾 Ticket Rápido</h2>
                             <p class="text-xs text-slate-500">Edita cantidades o precios unitarios por cliente</p>
                         </div>
                         <button id="btn-clear-cart" type="button"
-                            class="btn btn-xs btn-ghost text-slate-500 hover:text-red-600">
+                            class="btn btn-xs sm:btn-sm btn-ghost text-slate-500 hover:text-red-600">
                             Vaciar
                         </button>
                     </div>
 
-                    <form id="pos-ticket-form" class="mt-4 space-y-3.5">
+                    <form id="pos-ticket-form" class="mt-3.5 space-y-3.5">
                         <!-- Selector de Cliente con <datalist> de Abarrotes Locales -->
                         <div class="form-control">
                             <label class="label py-1" for="pos-client-input">
@@ -286,23 +300,23 @@
                                     list="pos-clients-datalist"
                                     placeholder="Ej. Abarrotes La Aguascalentense..."
                                     required
-                                    class="input input-sm input-bordered flex-1 focus:border-cyan-600 font-medium" />
+                                    class="input input-sm sm:input-md lg:input-sm input-bordered flex-1 focus:border-cyan-600 font-medium" />
                                 <button type="button" id="btn-quick-publico"
                                     title="Asignar Público en General (Mostrador)"
-                                    class="btn btn-sm btn-outline border-slate-300 text-slate-600 px-2.5 text-xs">
+                                    class="btn btn-sm sm:btn-md lg:btn-sm btn-outline border-slate-300 text-slate-600 px-3 text-xs font-bold">
                                     Mostrador
                                 </button>
                             </div>
                             <datalist id="pos-clients-datalist"></datalist>
                         </div>
 
-                        <!-- Repartidor y Método de Pago -->
-                        <div class="grid grid-cols-2 gap-2.5">
+                        <!-- Repartidor y Método de Pago (1 col en móvil muy estrecho, 2 cols en general) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             <div class="form-control">
                                 <label class="label py-1" for="pos-driver-select">
                                     <span class="label-text text-xs font-bold text-slate-700">Repartidor / Ruta</span>
                                 </label>
-                                <select id="pos-driver-select" class="select select-sm select-bordered w-full font-medium">
+                                <select id="pos-driver-select" class="select select-sm sm:select-md lg:select-sm select-bordered w-full font-medium">
                                     <option value="Mostrador">Mostrador Planta</option>
                                     <option value="Juan Pérez">Juan Pérez</option>
                                     <option value="Ruta Norte">Ruta Norte</option>
@@ -314,7 +328,7 @@
                                 <label class="label py-1" for="pos-payment-select">
                                     <span class="label-text text-xs font-bold text-slate-700">Método de Pago</span>
                                 </label>
-                                <select id="pos-payment-select" class="select select-sm select-bordered w-full font-medium">
+                                <select id="pos-payment-select" class="select select-sm sm:select-md lg:select-sm select-bordered w-full font-medium">
                                     <option value="Efectivo">💵 Efectivo</option>
                                     <option value="Transferencia">📱 Transferencia</option>
                                 </select>
@@ -326,19 +340,19 @@
                             <label class="label py-1" for="pos-status-select">
                                 <span class="label-text text-xs font-bold text-slate-700">Estatus de Operación</span>
                             </label>
-                            <select id="pos-status-select" class="select select-sm select-bordered w-full font-bold">
+                            <select id="pos-status-select" class="select select-sm sm:select-md lg:select-sm select-bordered w-full font-bold">
                                 <option value="Pagado">✅ Pagado (Liquidado — Saldo $0.00)</option>
                                 <option value="Pendiente">⏳ Pendiente (Crédito Ruta / CxC)</option>
                             </select>
                         </div>
 
                         <!-- Líneas del Carrito -->
-                        <div class="pt-2">
+                        <div class="pt-1">
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Productos en Nota</span>
                                 <span id="pos-cart-units" class="badge badge-xs badge-info font-bold text-cyan-950">0 pzas</span>
                             </div>
-                            <div id="pos-cart-items" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            <div id="pos-cart-items" class="space-y-2.5 max-h-80 lg:max-h-64 overflow-y-auto pr-1">
                                 <!-- Líneas inyectadas por POSController.js -->
                             </div>
                         </div>
@@ -349,17 +363,17 @@
                                 <label for="pos-cash-received" class="text-xs font-bold text-slate-600">
                                     💵 Pago recibido ($):
                                 </label>
-                                <input id="pos-cash-received" type="number" step="1" min="0" placeholder="Opcional (ej. 500)"
-                                    class="input input-xs input-bordered w-28 text-right font-bold tabular-nums" />
+                                <input id="pos-cash-received" type="number" step="1" min="0" inputmode="decimal" placeholder="Opcional (ej. 500)"
+                                    class="input input-xs sm:input-sm lg:input-xs input-bordered w-32 text-right font-bold tabular-nums" />
                             </div>
-                            <div class="flex items-center justify-between gap-1">
+                            <div class="flex items-center justify-between flex-wrap gap-1.5">
                                 <div class="flex gap-1">
-                                    <button type="button" data-cash-bill="100" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-1.5">$100</button>
-                                    <button type="button" data-cash-bill="200" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-1.5">$200</button>
-                                    <button type="button" data-cash-bill="500" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-1.5">$500</button>
-                                    <button type="button" data-cash-bill="1000" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-1.5">$1000</button>
+                                    <button type="button" data-cash-bill="100" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-2">$100</button>
+                                    <button type="button" data-cash-bill="200" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-2">$200</button>
+                                    <button type="button" data-cash-bill="500" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-2">$500</button>
+                                    <button type="button" data-cash-bill="1000" class="btn btn-xs btn-outline border-slate-300 text-[11px] px-2">$1000</button>
                                 </div>
-                                <div class="text-right">
+                                <div class="text-right ml-auto">
                                     <span class="text-[10px] uppercase font-bold text-slate-400 block leading-none">Cambio</span>
                                     <span id="pos-cash-change" class="text-sm font-black text-emerald-600 tabular-nums">$0.00</span>
                                 </div>
@@ -377,7 +391,7 @@
                             </div>
 
                             <button type="submit"
-                                class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md">
+                                class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md min-h-[3rem]">
                                 Registrar Salida / Emitir Ticket
                             </button>
                         </div>
@@ -388,13 +402,13 @@
             <!-- =================================================================
                  VISTA 2: CUENTAS POR COBRAR — MOTOR FIFO (SOLO ADMIN)
                  ================================================================= -->
-            <section id="view-cxc" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <section id="view-cxc" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
 
                 <!-- Panel Izquierdo (8 cols): Filtro por Cliente y Tabla Cronológica FIFO -->
-                <div class="lg:col-span-8 surface-card bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="lg:col-span-8 surface-card bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                         <div>
-                            <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                            <h2 class="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-2">
                                 <span class="text-cyan-600">📒</span> Cartera de Cuentas por Cobrar (Orden FIFO)
                             </h2>
                             <p class="text-xs text-slate-500">
@@ -402,7 +416,7 @@
                             </p>
                         </div>
 
-                        <div class="text-right bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+                        <div class="text-right bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 self-start sm:self-auto">
                             <span id="cxc-total-notes" class="block text-[11px] font-bold text-amber-800 uppercase">0 notas pendientes</span>
                             <span id="cxc-total-debt" class="text-xl font-black text-amber-700 tabular-nums">$0.00</span>
                         </div>
@@ -413,14 +427,14 @@
                         <label class="label py-1" for="cxc-client-filter">
                             <span class="label-text text-xs font-bold text-slate-700">Filtrar notas pendientes por Cliente:</span>
                         </label>
-                        <select id="cxc-client-filter" class="select select-sm select-bordered border-cyan-300 font-semibold text-slate-800">
+                        <select id="cxc-client-filter" class="select select-sm select-bordered border-cyan-300 font-semibold text-slate-800 w-full">
                             <!-- Opciones generadas por DebtController.js -->
                         </select>
                     </div>
 
-                    <!-- Tabla de Notas Pendientes -->
+                    <!-- Tabla de Notas Pendientes (Responsiva en móvil) -->
                     <div class="overflow-x-auto">
-                        <table class="table table-sm w-full">
+                        <table class="table table-sm w-full responsive-table">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-600 text-xs uppercase">
                                     <th>Folio / Prioridad</th>
@@ -440,10 +454,10 @@
                 </div>
 
                 <!-- Panel Derecho (4 cols): Motor de Abono Global Inteligente (FIFO) -->
-                <aside class="lg:col-span-4 surface-card bg-white rounded-2xl shadow-md border border-cyan-200 p-5 sticky top-20">
+                <aside class="lg:col-span-4 surface-card bg-white rounded-2xl shadow-md border border-cyan-200 p-4 sm:p-5 lg:sticky lg:top-20">
                     <div class="pb-3 border-b border-slate-100">
                         <span class="badge badge-info badge-sm font-bold text-cyan-950 mb-1">Algoritmo Financiero FIFO</span>
-                        <h3 class="text-lg font-extrabold text-slate-800">⚡ Abono Global Inteligente</h3>
+                        <h3 class="text-base sm:text-lg font-extrabold text-slate-800">⚡ Abono Global Inteligente</h3>
                         <p class="text-xs text-slate-500 mt-0.5">
                             Ingresa un monto global (ej. $500.00) y el sistema liquidará primero las notas más antiguas del cliente, abonando el remanente en la nota subsecuente.
                         </p>
@@ -466,11 +480,12 @@
                                 type="number"
                                 step="0.01"
                                 min="1"
+                                inputmode="decimal"
                                 placeholder="Ej. 500.00"
                                 required
                                 class="input input-bordered w-full font-extrabold text-lg text-cyan-900 focus:border-cyan-600 tabular-nums" />
 
-                            <div class="flex flex-wrap gap-1.5 mt-2">
+                            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5 mt-2">
                                 <button type="button" data-fifo-quick-amount="200" class="btn btn-xs btn-outline border-slate-300 text-slate-600">+$200</button>
                                 <button type="button" data-fifo-quick-amount="500" class="btn btn-xs btn-outline border-cyan-400 text-cyan-800 font-bold">+$500 (Demo FIFO)</button>
                                 <button type="button" data-fifo-quick-amount="1000" class="btn btn-xs btn-outline border-slate-300 text-slate-600">+$1,000</button>
@@ -489,7 +504,7 @@
                         </div>
 
                         <button id="cxc-fifo-submit-btn" type="submit"
-                            class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md">
+                            class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md min-h-[3rem]">
                             Aplicar Abono Global (FIFO)
                         </button>
                     </form>
@@ -499,6 +514,33 @@
                 </aside>
             </section>
         </main>
+
+        <!-- =================================================================
+             BARRA INFERIOR FLOTANTE DEL TICKET (EXCLUSIVA MÓVIL Y TABLET < 1024px)
+             Permite ver el carrito en vivo y saltar a cobrar sin hacer scroll manual
+             ================================================================= -->
+        <div id="mobile-bottom-bar" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-t border-cyan-500/40 px-3.5 py-2.5 shadow-2xl no-print">
+            <div class="max-w-3xl mx-auto flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <span class="badge badge-info badge-xs font-bold text-cyan-950" id="mobile-bar-units">0 pzas</span>
+                        <span class="text-[11px] text-cyan-200 font-semibold truncate">Ticket Activo</span>
+                    </div>
+                    <p id="mobile-bar-total" class="text-lg font-black text-cyan-300 tabular-nums leading-tight">$0.00</p>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="#section-catalog"
+                        class="btn btn-sm bg-slate-800 hover:bg-slate-700 text-cyan-200 border border-cyan-700/50 rounded-xl font-bold px-3">
+                        🧊 +Hielo
+                    </a>
+                    <a href="#section-ticket" id="btn-mobile-go-ticket"
+                        class="btn btn-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 border-none rounded-xl font-extrabold px-4 shadow-md">
+                        🧾 Ver / Cobrar Ticket
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- =====================================================================
@@ -506,15 +548,15 @@
          ===================================================================== -->
     <dialog id="modal-login" class="modal">
         <div class="modal-box max-w-md bg-white rounded-3xl shadow-2xl border border-cyan-200 p-0 overflow-hidden">
-            <div class="bg-gradient-to-br from-slate-900 via-cyan-950 to-sky-900 p-6 text-white text-center">
-                <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+            <div class="bg-gradient-to-br from-slate-900 via-cyan-950 to-sky-900 p-5 sm:p-6 text-white text-center">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-2xl sm:text-3xl mx-auto mb-2.5 shadow-inner">
                     ❄️
                 </div>
-                <h2 class="text-2xl font-black tracking-tight">HIELO <span class="text-cyan-400">HIDROICE</span></h2>
+                <h2 class="text-xl sm:text-2xl font-black tracking-tight">HIELO <span class="text-cyan-400">HIDROICE</span></h2>
                 <p class="text-xs text-cyan-200 mt-1">Sistema POS y Logística de Distribución — Aguascalientes</p>
             </div>
 
-            <form id="form-login" class="p-6 space-y-4">
+            <form id="form-login" class="p-5 sm:p-6 space-y-4">
                 <div id="login-error-msg" class="hidden alert alert-error text-white text-xs font-semibold py-2.5 px-3 rounded-xl"></div>
 
                 <div class="form-control">
@@ -533,7 +575,7 @@
                         class="input input-bordered w-full font-semibold focus:border-cyan-600" />
                 </div>
 
-                <button type="submit" class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md">
+                <button type="submit" class="btn bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full font-extrabold shadow-md min-h-[3rem]">
                     Ingresar al Sistema
                 </button>
 
@@ -544,12 +586,12 @@
                     </p>
                     <div class="grid grid-cols-2 gap-2">
                         <button type="button" data-quick-login="admin"
-                            class="btn btn-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 font-bold">
-                            🔑 Admin (admin/admin)
+                            class="btn btn-sm bg-cyan-50 hover:bg-cyan-100 text-cyan-900 border border-cyan-200 font-bold">
+                            🔑 Admin
                         </button>
                         <button type="button" data-quick-login="cajero"
-                            class="btn btn-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold">
-                            🧑‍💼 Cajero (cajero/cajero)
+                            class="btn btn-sm bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold">
+                            🧑‍💼 Cajero
                         </button>
                     </div>
                 </div>
@@ -560,35 +602,35 @@
     <!-- =====================================================================
          MODAL 2: DEVOLUCIÓN / SOBRANTE DE RUTA (<dialog>)
          ===================================================================== -->
-    <dialog id="modal-return" class="modal">
-        <div class="modal-box max-w-xl bg-white rounded-2xl border border-slate-200 p-6">
+    <dialog id="modal-return" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box max-w-xl bg-white rounded-2xl border border-slate-200 p-4 sm:p-6">
             <div class="flex items-start justify-between border-b border-slate-100 pb-3">
                 <div>
                     <span class="badge badge-warning badge-sm font-bold text-amber-950 mb-1">Ajuste de Ruta en Tiempo Real</span>
-                    <h3 class="text-lg font-extrabold text-slate-800">
-                        🔄 Devolución / Sobrante de Producto — <span id="return-order-folio" class="text-cyan-700 font-mono"></span>
+                    <h3 class="text-base sm:text-lg font-extrabold text-slate-800">
+                        🔄 Devolución / Sobrante — <span id="return-order-folio" class="text-cyan-700 font-mono"></span>
                     </h3>
                     <p id="return-order-client" class="text-xs text-slate-500 mt-0.5"></p>
                 </div>
             </div>
 
-            <form id="form-return" class="mt-4 space-y-4">
-                <p class="text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <form id="form-return" class="mt-3.5 space-y-3.5">
+                <p class="text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-xl p-2.5 sm:p-3">
                     Ingresa la cantidad de bolsas, barras o garrafones que el repartidor <strong>no entregó</strong> y regresó a planta. El total de la orden y su saldo se recalcularán al instante.
                 </p>
 
-                <div id="return-items-container" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                <div id="return-items-container" class="space-y-2.5 max-h-64 sm:max-h-72 overflow-y-auto pr-1">
                     <!-- Controles inyectados por POSController.js -->
                 </div>
 
                 <div class="flex items-center justify-between bg-slate-900 text-white p-3.5 rounded-xl">
-                    <span class="text-xs uppercase font-bold text-cyan-300">Nuevo Total Neto Recalculado:</span>
+                    <span class="text-xs uppercase font-bold text-cyan-300">Nuevo Total Neto:</span>
                     <span id="return-preview-total" class="text-xl font-black text-cyan-300 tabular-nums">$0.00</span>
                 </div>
 
-                <div class="modal-action mt-4">
-                    <button id="btn-cancel-return" type="button" class="btn btn-sm btn-ghost">Cancelar</button>
-                    <button type="submit" class="btn btn-sm bg-cyan-600 hover:bg-cyan-500 text-white border-none font-bold">
+                <div class="modal-action mt-4 flex-col-reverse sm:flex-row gap-2">
+                    <button id="btn-cancel-return" type="button" class="btn btn-sm sm:btn-md btn-ghost w-full sm:w-auto">Cancelar</button>
+                    <button type="submit" class="btn btn-sm sm:btn-md bg-cyan-600 hover:bg-cyan-500 text-white border-none font-bold w-full sm:w-auto">
                         Guardar Devolución y Recalcular
                     </button>
                 </div>
@@ -599,38 +641,38 @@
     <!-- =====================================================================
          MODAL 3: CORTE DE CAJA DIARIO Y ARQUEO DE INVENTARIO (SOLO ADMIN)
          ===================================================================== -->
-    <dialog id="modal-cash-cut" class="modal">
-        <div class="modal-box max-w-3xl bg-white rounded-2xl border border-cyan-200 p-6">
+    <dialog id="modal-cash-cut" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box max-w-3xl bg-white rounded-2xl border border-cyan-200 p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                 <div>
                     <span class="badge badge-info badge-sm font-bold text-cyan-950">Exclusivo Administrador</span>
-                    <h3 class="text-xl font-black text-slate-800 mt-1">📊 Corte de Caja Diario y Arqueo de Inventario</h3>
+                    <h3 class="text-lg sm:text-xl font-black text-slate-800 mt-1">📊 Corte de Caja Diario y Arqueo de Inventario</h3>
                     <p id="corte-fecha" class="text-xs text-slate-500 capitalize"></p>
                 </div>
-                <span id="corte-operaciones-resumen" class="badge badge-ghost font-semibold text-xs"></span>
+                <span id="corte-operaciones-resumen" class="badge badge-ghost font-semibold text-xs self-start sm:self-auto"></span>
             </div>
 
             <!-- 1. Arqueo Financiero (Separación estricta Efectivo vs Transferencias) -->
-            <div class="mt-5">
+            <div class="mt-4 sm:mt-5">
                 <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2.5">
                     1. Arqueo Financiero (Ingresos Reales Recibidos Hoy)
                 </h4>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                    <div class="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
                         <span class="text-xs font-bold text-emerald-800 block">💵 Efectivo Físico en Gaveta</span>
-                        <span id="corte-efectivo" class="text-2xl font-black text-emerald-700 mt-1 block tabular-nums">$0.00</span>
+                        <span id="corte-efectivo" class="text-xl sm:text-2xl font-black text-emerald-700 mt-1 block tabular-nums">$0.00</span>
                         <span class="text-[11px] text-emerald-600">Billetes y monedas por arquear</span>
                     </div>
 
-                    <div class="p-4 rounded-2xl bg-sky-50 border border-sky-200">
+                    <div class="p-3.5 sm:p-4 rounded-2xl bg-sky-50 border border-sky-200">
                         <span class="text-xs font-bold text-sky-800 block">📱 Transferencias Bancarias</span>
-                        <span id="corte-transferencia" class="text-2xl font-black text-sky-700 mt-1 block tabular-nums">$0.00</span>
+                        <span id="corte-transferencia" class="text-xl sm:text-2xl font-black text-sky-700 mt-1 block tabular-nums">$0.00</span>
                         <span class="text-[11px] text-sky-600">SPEI / Cuenta Empresarial</span>
                     </div>
 
-                    <div class="p-4 rounded-2xl bg-slate-900 text-white">
+                    <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900 text-white">
                         <span class="text-xs font-bold text-cyan-300 block">💰 Total Ingresado Hoy</span>
-                        <span id="corte-total-caja" class="text-2xl font-black text-white mt-1 block tabular-nums">$0.00</span>
+                        <span id="corte-total-caja" class="text-xl sm:text-2xl font-black text-white mt-1 block tabular-nums">$0.00</span>
                         <span class="text-[11px] text-cyan-200/80">
                             Crédito hoy por cobrar: <strong id="corte-credito-hoy">$0.00</strong>
                         </span>
@@ -639,18 +681,18 @@
             </div>
 
             <!-- 2. Corte de Inventario Neto (Unidades Vendidas - Devoluciones) -->
-            <div class="mt-6">
+            <div class="mt-5 sm:mt-6">
                 <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2.5">
                     2. Corte de Inventario Neto (Salidas de Planta menos Devoluciones de Ruta)
                 </h4>
                 <div class="overflow-x-auto border border-slate-200 rounded-xl">
-                    <table class="table table-sm w-full">
+                    <table class="table table-xs sm:table-sm w-full">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 text-xs">
                                 <th>Producto Oficial</th>
                                 <th class="text-right">Precio Base</th>
-                                <th class="text-center">Unidades Salida</th>
-                                <th class="text-center">Devoluciones</th>
+                                <th class="text-center">Salida</th>
+                                <th class="text-center">Dev.</th>
                                 <th class="text-center">Venta Neta</th>
                                 <th class="text-right">Importe Neto</th>
                             </tr>
@@ -669,14 +711,14 @@
                 </div>
             </div>
 
-            <div class="modal-action mt-6">
-                <button id="btn-print-cash-cut" type="button"
-                    class="btn btn-sm bg-slate-800 hover:bg-slate-700 text-white border-none gap-2">
-                    🖨️ Imprimir Corte Térmico
-                </button>
+            <div class="modal-action mt-5 flex-col-reverse sm:flex-row gap-2">
                 <button id="btn-close-cash-cut" type="button"
-                    class="btn btn-sm bg-cyan-600 hover:bg-cyan-500 text-white border-none">
+                    class="btn btn-sm sm:btn-md bg-cyan-600 hover:bg-cyan-500 text-white border-none w-full sm:w-auto">
                     Cerrar Corte
+                </button>
+                <button id="btn-print-cash-cut" type="button"
+                    class="btn btn-sm sm:btn-md bg-slate-800 hover:bg-slate-700 text-white border-none gap-2 w-full sm:w-auto">
+                    🖨️ Imprimir Corte Térmico
                 </button>
             </div>
         </div>
